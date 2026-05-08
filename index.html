@@ -148,6 +148,15 @@
 </header>
 
 <main class="main">
+ 
+<div id="executivePanel" style="
+  background:#ffffff;
+  border:1px solid rgba(0,0,0,0.1);
+  border-radius:14px;
+  padding:18px;
+  margin-bottom:16px;">
+</div>
+``
   <div class="controls-row">
     <div>
       <div class="page-title">Comparativo Mensal</div>
@@ -811,6 +820,13 @@ function switchView(view, btn) {
 
 /* ── APPLY FILTERS ── */
 function applyFilters() {
+ 
+if (!selectedUnit) {
+  buildExecutivePanel(currentMonth);
+} else {
+  document.getElementById('executivePanel').innerHTML = '';
+}
+
   const filter = document.getElementById('filterSel').value;
   const search = document.getElementById('searchBox').value.toLowerCase();
 
@@ -865,6 +881,134 @@ function exportCSV() {
   const a = document.createElement('a');
   a.href = url; a.download = `indicadores_${currentMonth.toLowerCase()}.csv`;
   a.click(); URL.revokeObjectURL(url);
+}
+
+// ===== RANKING =====
+function getRanking(month) {
+  const ranking = UNITS.map(u => {
+    const vals = INDICATORS.map(ind => getMonthData(u, month, ind.key)).filter(v => v !== null);
+    const avg = vals.length ? vals.reduce((a,b)=>a+b,0) / vals.length : 0;
+    return { unidade: u, media: avg };
+  });
+
+  ranking.sort((a,b) => b.media - a.media);
+  return ranking;
+}
+
+// ===== MÊS ANTERIOR =====
+function getPreviousMonth(month) {
+  const idx = MONTHS.indexOf(month);
+  if (idx <= 0) return null;
+  return MONTHS[idx - 1];
+}
+
+// ===== RESUMO EXECUTIVO =====
+function buildExecutiveSummary(month) {
+
+  const ranking = getRanking(month);
+  const worst = ranking.slice(-3).reverse().map(r => r.unidade);
+
+  const criticos = INDICATORS.filter(ind => {
+    const val = getMonthData('CAT CM', month, ind.key);
+    return val !== null && val < ind.meta;
+  }).map(i => i.key);
+
+  return `
+  No mês de ${month}, a operação apresenta desempenho com ${
+    criticos.length > 0 ? 'necessidade de atenção' : 'estabilidade operacional'
+  }.
+
+  Unidades com maior necessidade de atuação: ${worst.join(', ')}.
+
+  ${
+    criticos.length > 0
+      ? `Indicadores críticos: ${criticos.join(', ')}.`
+      : 'Todos os indicadores estão dentro do esperado.'
+  }
+  `;
+}
+
+// ===== PAINEL EXECUTIVO =====
+function buildExecutivePanel(month) {
+
+  let totalUnits = 0;
+  let okUnits = 0;
+  let alertUnits = 0;
+  let criticalUnits = 0;
+
+  UNITS.forEach(u => {
+    if (u === 'CAT CM') return;
+
+    const vals = INDICATORS.map(ind => getMonthData(u, month, ind.key)).filter(v => v !== null);
+    if (!vals.length) return;
+
+    totalUnits++;
+
+    const allOk = vals.every((v,i) => v >= INDICATORS[i].meta);
+    const hasCritical = vals.some((v,i) => v <= INDICATORS[i].red);
+
+    if (allOk) okUnits++;
+    else if (hasCritical) criticalUnits++;
+    else alertUnits++;
+  });
+
+  let status = '';
+  let color = '';
+
+  if (criticalUnits > 0) {
+    status = 'CRÍTICO';
+    color = '#E24B4A';
+  } else if (alertUnits > 0) {
+    status = 'ATENÇÃO';
+    color = '#BA7517';
+  } else {
+    status = 'CONTROLADO';
+    color = '#1D9E75';
+  }
+
+  const ranking = getRanking(month);
+  const top3 = ranking.slice(0,3);
+  const worst3 = ranking.slice(-3).reverse();
+
+  const resumo = buildExecutiveSummary(month);
+
+  document.getElementById('executivePanel').innerHTML = `
+    <div style="display:flex;flex-wrap:wrap;gap:20px;">
+      
+      <div style="flex:1;">
+        <div style="font-size:12px;color:#888;">Situação Geral</div>
+        <div style="font-size:24px;font-weight:bold;color:${color}">
+          ${status}
+        </div>
+      </div>
+
+      <div style="flex:1;">
+        <div style="font-size:12px;color:#888;">Unidades</div>
+        <div>
+          ✅ ${okUnits} | ⚠️ ${alertUnits} | 🚨 ${criticalUnits}
+        </div>
+      </div>
+
+      <div style="flex:2;">
+        <div style="font-size:12px;color:#888;">Destaques</div>
+        <div>
+          🏆 ${top3.map(r => r.unidade).join(', ')}<br>
+          🚨 ${worst3.map(r => r.unidade).join(', ')}
+        </div>
+      </div>
+
+    </div>
+
+    <div style="
+      margin-top:15px;
+      background:#f7f6f2;
+      padding:12px;
+      border-radius:8px;
+      font-size:12px;">
+      <strong>Resumo executivo:</strong><br>
+      ${resumo}
+    </div>
+  `;
 }
 
 /* ── INIT ── */
