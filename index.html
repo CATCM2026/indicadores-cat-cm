@@ -291,7 +291,7 @@ async function loadFromSheets() {
 }
 
 /* ── STATE ── */
-let currentMonth = 'Acumulado';
+let currentMonth = 'Abr';
 let currentView = 'table';
 let sortColumn = null;
 let sortDirection = 'desc';
@@ -577,8 +577,8 @@ function buildHeader() {
     INDICATORS.map(i => {
       const hl = currentIndicator === 'all' ? '' : currentIndicator === i.key ? ' col-highlight' : ' col-dim';
       return `<th class="${hl}" onclick="sortByIndicator('${i.key}')" style="cursor:pointer;">
-      ${i.key} ${sortColumn === i.key ? (sortDirection === 'asc' ? '↑' : '↓') : ''}
-   </th>`;
+  ${i.key} ${sortColumn === i.key ? (sortDirection === 'asc' ? '↑' : '↓') : ''}
+</th>`;
     }).join('') + `<th>Status</th>`;
   document.getElementById('metaRow').innerHTML =
     `<th class="unit-col"></th><th class="unit-col" style="color:var(--text3);font-size:11px;">Meta →</th>` +
