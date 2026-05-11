@@ -805,30 +805,31 @@ function buildExecutiveSummary(month) {
 // ===== PAINEL EXECUTIVO =====
 function buildExecutivePanel(month) {
 
-  let totalUnits = 0;
-  let okUnits = 0;
-  let alertUnits = 0;
-  let criticalUnits = 0;
-
-  UNITS.forEach(u => {
-    if (u === 'CAT CM') return;
-
-   const val = getMonthData(u, month, 'DOAT');
-if (val === null) return;
-
-totalUnits++;
+ const val = getMonthData('CAT CM', month, 'DOAT');
 
 const indicador = INDICATORS.find(i => i.key === 'DOAT');
 const meta = indicador.meta;
 const red = indicador.red;
 
-const allOk = val >= meta;
-const hasCritical = val <= red;
+let status = '';
+let color = '';
 
-    if (allOk) okUnits++;
-    else if (hasCritical) criticalUnits++;
-    else alertUnits++;
-  });
+if (val === null) {
+  status = 'SEM DADO';
+  color = '#888';
+}
+else if (val <= red) {
+  status = 'CRÍTICO';
+  color = '#E24B4A';
+}
+else if (val < meta) {
+  status = 'ATENÇÃO';
+  color = '#BA7517';
+}
+else {
+  status = 'CONTROLADO';
+  color = '#1D9E75';
+} 
 
   let status = '';
 let color = '';
