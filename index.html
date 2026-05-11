@@ -805,50 +805,31 @@ function buildExecutiveSummary(month) {
 // ===== PAINEL EXECUTIVO =====
 function buildExecutivePanel(month) {
 
- const val = getMonthData('CAT CM', month, 'DOAT');
+  const val = getMonthData('CAT CM', month, 'DOAT');
 
-const indicador = INDICATORS.find(i => i.key === 'DOAT');
-const meta = indicador.meta;
-const red = indicador.red;
-
-let status = '';
-let color = '';
-
-if (val === null) {
-  status = 'SEM DADO';
-  color = '#888';
-}
-else if (val <= red) {
-  status = 'CRÍTICO';
-  color = '#E24B4A';
-}
-else if (val < meta) {
-  status = 'ATENÇÃO';
-  color = '#BA7517';
-}
-else {
-  status = 'CONTROLADO';
-  color = '#1D9E75';
-} 
+  const indicador = INDICATORS.find(i => i.key === 'DOAT');
+  const meta = indicador.meta;
+  const red = indicador.red;
 
   let status = '';
-let color = '';
+  let color = '';
 
-const percCritico = criticalUnits / totalUnits;
-const percAlerta = alertUnits / totalUnits;
-
-if (percCritico >= 0.2) {
-  status = 'CRÍTICO';
-  color = '#E24B4A';
-}
-else if (percAlerta >= 0.2 || percCritico > 0) {
-  status = 'ATENÇÃO';
-  color = '#BA7517';
-}
-else {
-  status = 'CONTROLADO';
-  color = '#1D9E75';
-}
+  if (val === null) {
+    status = 'SEM DADO';
+    color = '#888';
+  }
+  else if (val <= red) {
+    status = 'CRÍTICO';
+    color = '#E24B4A';
+  }
+  else if (val < meta) {
+    status = 'ATENÇÃO';
+    color = '#BA7517';
+  }
+  else {
+    status = 'CONTROLADO';
+    color = '#1D9E75';
+  }
 
   const ranking = getRanking(month);
   const top3 = ranking.slice(0,3);
@@ -864,12 +845,8 @@ else {
         <div style="font-size:24px;font-weight:bold;color:${color}">
           ${status}
         </div>
-      </div>
-
-      <div style="flex:1;">
-        <div style="font-size:12px;color:#888;">Unidades</div>
-        <div>
-          ✅ ${okUnits} | ⚠️ ${alertUnits} | 🚨 ${criticalUnits}
+        <div style="font-size:12px;margin-top:5px;">
+          DOAT: ${val !== null ? val.toFixed(2) + '%' : '—'}
         </div>
       </div>
 
