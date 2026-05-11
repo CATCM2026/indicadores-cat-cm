@@ -283,7 +283,8 @@ async function loadFromSheets() {
 
     INDICATORS.forEach((ind, i) => {
       const val = cols[i + 2];
-      DATA[unidade][mes][ind.key] = val ? parseFloat(val) : null;
+      const num = parseFloat(val);
+      DATA[unidade][mes][ind.key] = isNaN(num) ? null : num;
     });
   });
 
