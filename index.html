@@ -621,10 +621,10 @@ function buildTable(month, filter, search) {
       }).join('')}
       <td>
   ${allOk
-    ? '<span class="badge badge-ok">✅</span>'
+    ? '<span class="badge badge-ok">✅ Conforme</span>'
     : hasRed
-    ? '<span class="badge badge-nok">⛔</span>'
-    : '<span class="badge" style="background:var(--amber-bg);color:var(--amber);">⚠️</span>'
+    ? '<span class="badge badge-nok">⛔ Crítico</span>'
+    : '<span class="badge" style="background:var(--amber-bg);color:var(--amber);">⚠️ Atenção</span>'
   }
 </td>
  
@@ -755,7 +755,7 @@ function exportCSV() {
       const vals = INDICATORS.map(ind => DATA[u][m][ind.key]);
       const allOk = vals.every((v,i) => v !== null && v >= INDICATORS[i].meta);
       const hasDado = vals.some(v => v !== null);
-      return [m+' 2026', ...vals.map(v => v !== null ? v.toFixed(2)+'%' : '—'), hasDado ? (allOk ? '✅ Conforme' : '⛔ Crítico') : '—'].join(';');
+      return [m+' 2026', ...vals.map(v => v !== null ? v.toFixed(2)+'%' : '—'), hasDado ? (allOk ? '✅' : '⛔') : '—'].join(';');
     }).join('\n');
     const csv = `Unidade: ${u}\n${header}\n${metas}\n${body}`;
     const blob = new Blob(['\uFEFF'+csv], { type: 'text/csv;charset=utf-8;' });
@@ -773,7 +773,7 @@ function exportCSV() {
   if (filter === 'ok') rows = rows.filter(r => r.allOk);
   const header = ['Unidade', ...INDICATORS.map(i => i.key), 'Status'].join(';');
   const metas = ['Meta', ...INDICATORS.map(i => i.meta.toFixed(2)+'%'), ''].join(';');
-  const body = rows.map(r => [r.u, ...r.vals.map(v => v !== null ? v.toFixed(2)+'%' : '—'), r.allOk ? '✅ Conforme' : '⛔'].join(';')).join('\n');
+  const body = rows.map(r => [r.u, ...r.vals.map(v => v !== null ? v.toFixed(2)+'%' : '—'), r.allOk ? '✅' : '⛔'].join(';')).join('\n');
   const csv = `Mês: ${currentMonth}\n${header}\n${metas}\n${body}`;
   const blob = new Blob(['\uFEFF'+csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
