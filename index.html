@@ -789,6 +789,7 @@ function buildExecutiveSummary(month) {
   return `
   No mês de ${month}, a operação apresenta desempenho com ${
     criticos.length > 0 ? 'necessidade de atenção' : 'estabilidade operacional'
+
   }.
 
   Unidades com maior necessidade de atuação: ${worst.join(', ')}.
@@ -812,13 +813,14 @@ function buildExecutivePanel(month) {
   UNITS.forEach(u => {
     if (u === 'CAT CM') return;
 
-    const val = getMonthData(u, month, 'DOAT');
+   const val = getMonthData(u, month, 'DOAT');
 if (val === null) return;
 
 totalUnits++;
 
-const meta = INDICATORS.find(i => i.key === 'DOAT').meta;
-const red = INDICATORS.find(i => i.key === 'DOAT').red;
+const indicador = INDICATORS.find(i => i.key === 'DOAT');
+const meta = indicador.meta;
+const red = indicador.red;
 
 const allOk = val >= meta;
 const hasCritical = val <= red;
