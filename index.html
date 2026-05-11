@@ -292,9 +292,9 @@ async function loadFromSheets() {
 
 /* ── STATE ── */
 let currentMonth = 'Abr';
-let currentView = 'table';
 let sortColumn = null;
 let sortDirection = 'desc';
+let currentView = 'table';
 let currentIndicator = 'all';
 let selectedUnit = '';
 let trendCharts = {};
@@ -590,7 +590,9 @@ function buildHeader() {
 
 function buildTable(month, filter, search) {
   document.getElementById('tableMonth').textContent = month === 'ACUM' ? 'Média Acumulada 2026' : month + ' 2026';
-  let rows = UNITS.map((u, idx) => ({if (sortColumn) {
+  let rows = UNITS.map((u, idx) => ({
+   
+if (sortColumn) {
   const index = INDICATORS.findIndex(i => i.key === sortColumn);
 
   rows.sort((a, b) => {
@@ -599,7 +601,8 @@ function buildTable(month, filter, search) {
 
     return sortDirection === 'asc' ? valA - valB : valB - valA;
   });
-} u, idx: idx+1, vals: INDICATORS.map(ind => getMonthData(u, month, ind.key)) }))
+}
+ u, idx: idx+1, vals: INDICATORS.map(ind => getMonthData(u, month, ind.key)) }))
     .filter(r => r.u.toLowerCase().includes(search));
   rows = rows.map(r => {
     const checkInds = currentIndicator === 'all' ? INDICATORS : INDICATORS.filter(i => i.key === currentIndicator);
