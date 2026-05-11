@@ -346,6 +346,17 @@ function getMonthData(u, month, indKey) {
   if (month === 'ACUM') return getAccum(u, indKey);
   return DATA[u][month][indKey];
 }
+function sortByIndicator(indKey) {
+
+  if (sortColumn === indKey) {
+    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortColumn = indKey;
+    sortDirection = 'desc';
+  }
+
+  applyFilters();
+}
 
 /* ── MONTH TABS ── */
 function buildMonthTabs() {
@@ -357,6 +368,7 @@ function buildMonthTabs() {
   const acumBtn = `<button class="month-tab acum-tab${currentMonth==='ACUM'?' active':''}" onclick="selectMonth('ACUM',this)">&#8709; Acumulado</button>`;
   wrap.innerHTML = monthBtns + acumBtn;
 }
+ 
 function selectMonth(m, el) {
   currentMonth = m;
   document.querySelectorAll('.month-tab').forEach(t => t.classList.remove('active'));
