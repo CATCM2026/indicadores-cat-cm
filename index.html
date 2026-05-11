@@ -757,11 +757,11 @@ function exportCSV() {
 }
 
 // ===== RANKING =====
+
 function getRanking(month) {
   const ranking = UNITS.map(u => {
-    const vals = INDICATORS.map(ind => getMonthData(u, month, ind.key)).filter(v => v !== null);
-    const avg = vals.length ? vals.reduce((a,b)=>a+b,0) / vals.length : 0;
-    return { unidade: u, media: avg };
+    const val = getMonthData(u, month, 'DECA');
+    return { unidade: u, media: val !== null ? val : 0 };
   });
 
   ranking.sort((a,b) => b.media - a.media);
