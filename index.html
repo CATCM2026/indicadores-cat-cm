@@ -450,7 +450,25 @@ function buildUnitTable(u) {
         const cls = ok ? 'cell-ok' : bad ? 'cell-nok' : 'cell-warn';
         return `<td class="${cls}${hl}">${v.toFixed(2)}%</td>`;
       }).join('')}
-      <td>${!hasDado ? '<span style="color:var(--text3);font-size:11px;">—</span>' : allOk ? '<span class="badge badge-ok">✅</span>' : hasRed ? '<span class="badge badge-nok">⛔</span>' : '<span class="badge" style="background:var(--amber-bg);color:var(--amber);">⚠️</span>'}</td>
+      <td>
+  ${
+    !hasDado
+      ? '<span style="color:var(--text3);font-size:11px;">—</span>'
+      : (() => {
+          const abaixoMeta = vals.filter((v,i) =>
+            v !== null && !isNaN(v) && v < indsToShow[i].meta
+          ).length;
+
+          if (abaixoMeta === 0) {
+            return '<span class="badge badge-ok">✅ Conforme</span>';
+          }
+          if (abaixoMeta <= 2) {
+            return '<span class="badge" style="background:var(--amber-bg);color:var(--amber);">⚠️ Atenção</span>';
+          }
+          return '<span class="badge badge-nok">⛔ Crítico</span>';
+        })()
+  }
+</td>
     </tr>`;
   }).join('');
 }
