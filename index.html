@@ -831,18 +831,23 @@ const hasCritical = val <= red;
   });
 
   let status = '';
-  let color = '';
+let color = '';
 
-  if (criticalUnits > 0) {
-    status = 'CRÍTICO';
-    color = '#E24B4A';
-  } else if (alertUnits > 0) {
-    status = 'ATENÇÃO';
-    color = '#BA7517';
-  } else {
-    status = 'CONTROLADO';
-    color = '#1D9E75';
-  }
+const percCritico = criticalUnits / totalUnits;
+const percAlerta = alertUnits / totalUnits;
+
+if (percCritico >= 0.2) {
+  status = 'CRÍTICO';
+  color = '#E24B4A';
+}
+else if (percAlerta >= 0.2 || percCritico > 0) {
+  status = 'ATENÇÃO';
+  color = '#BA7517';
+}
+else {
+  status = 'CONTROLADO';
+  color = '#1D9E75';
+}
 
   const ranking = getRanking(month);
   const top3 = ranking.slice(0,3);
