@@ -760,7 +760,7 @@ function exportCSV() {
 
 function getRanking(month) {
   const ranking = UNITS.map(u => {
-    const val = getMonthData(u, month, 'DECA');
+    const val = getMonthData(u, month, 'DOAT');
     return { unidade: u, media: val !== null ? val : 0 };
   });
 
@@ -812,13 +812,13 @@ function buildExecutivePanel(month) {
   UNITS.forEach(u => {
     if (u === 'CAT CM') return;
 
-    const val = getMonthData(u, month, 'DECA');
+    const val = getMonthData(u, month, 'DOAT');
 if (val === null) return;
 
 totalUnits++;
 
-const meta = INDICATORS.find(i => i.key === 'DECA').meta;
-const red = INDICATORS.find(i => i.key === 'DECA').red;
+const meta = INDICATORS.find(i => i.key === 'DOAT').meta;
+const red = INDICATORS.find(i => i.key === 'DOAT').red;
 
 const allOk = val >= meta;
 const hasCritical = val <= red;
