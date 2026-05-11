@@ -299,8 +299,6 @@ let selectedUnit = '';
 let sortColumn = null;
 let sortDirection = 'desc';
 
-let quickFilter = 'all';
-
 document.getElementById('headerDate').textContent = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
 
 /* ── POPULATE UNIT SELECT ── */
@@ -600,7 +598,7 @@ function buildTable(month, filter, search) {
 
 rows = rows.filter(r => r.u.toLowerCase().includes(search));
 
-// ✅ FILTROS DIRETORIA
+// FILTROS DIRETORIA
 const ranking = getRanking(month);
 
 if (quickFilter === 'top') {
@@ -617,7 +615,7 @@ if (quickFilter === 'worst') {
   });
 }
 
-// ✅ ORDENAÇÃO
+// ORDENAÇÃO
 if (sortColumn) {
   const index = INDICATORS.findIndex(i => i.key === sortColumn);
 
@@ -628,20 +626,11 @@ if (sortColumn) {
     return sortDirection === 'asc' ? valA - valB : valB - valA;
   });
 }
+}
 
 
 // ========= FILTROS DIRETORIA =========
-const ranking = getRanking(month);
-
-if (quickFilter === 'top') {
-  const top10 = ranking.slice(0,10).map(r => r.unidade);
-  rows = rows.filter(r => top10.includes(r.u));
-}
-
-if (quickFilter === 'worst') {
-  const indicador = INDICATORS.find(i => i.key === 'DOAT');
-
-  rows = rows.filter(r => {
+rows = rows.filter(r => {
     const val = getMonthData(r.u, month, 'DOAT');
     return val !== null && val < indicador.meta;
   });
@@ -649,13 +638,6 @@ if (quickFilter === 'worst') {
    
 if (sortColumn) {
   const index = INDICATORS.findIndex(i => i.key === sortColumn);
-
-  rows.sort((a, b) => {
-    const valA = a.vals[index] ?? -Infinity;
-    const valB = b.vals[index] ?? -Infinity;
-
-    return sortDirection === 'asc' ? valA - valB : valB - valA;
-  });
 }
  u, idx: idx+1, vals: INDICATORS.map(ind => getMonthData(u, month, ind.key)) }))
     .filter(r => r.u.toLowerCase().includes(search));
@@ -840,15 +822,6 @@ function exportCSV() {
 
 // ===== RANKING =====
 
-function getRanking(month) {
-  const ranking = UNITS.map(u => {
-    const val = getMonthData(u, month, 'DOAT');
-    return { unidade: u, media: val !== null ? val : 0 };
-  });
-
-  ranking.sort((a,b) => b.media - a.media);
-  return ranking;
-}
 
 // ===== MÊS ANTERIOR =====
 function getPreviousMonth(month) {
@@ -858,31 +831,7 @@ function getPreviousMonth(month) {
 }
 
 // ===== RESUMO EXECUTIVO =====
-function buildExecutiveSummary(month) {
 
-  const ranking = getRanking(month);
-  const worst = ranking.slice(-3).reverse().map(r => r.unidade);
-
-  const criticos = INDICATORS.filter(ind => {
-    const val = getMonthData('CAT CM', month, ind.key);
-    return val !== null && val < ind.meta;
-  }).map(i => i.key);
-
-  return `
-  No mês de ${month}, a operação apresenta desempenho com ${
-    criticos.length > 0 ? 'necessidade de atenção' : 'estabilidade operacional'
-
-  }.
-
-  Unidades com maior necessidade de atuação: ${worst.join(', ')}.
-
-  ${
-    criticos.length > 0
-      ? `Indicadores críticos: ${criticos.join(', ')}.`
-      : 'Todos os indicadores estão dentro do esperado.'
-  }
-  `;
-}
 
 // ===== PAINEL EXECUTIVO =====
 function buildExecutivePanel(month) {
@@ -912,11 +861,6 @@ function buildExecutivePanel(month) {
     status = 'CONTROLADO';
     color = '#1D9E75';
   }
-
-  const ranking = getRanking(month);
-  const top3 = ranking.slice(0,3);
-  const worst3 = ranking.slice(-3).reverse();
-
   const resumo = buildExecutiveSummary(month);
 
   document.getElementById('executivePanel').innerHTML = `
