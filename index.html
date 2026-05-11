@@ -593,7 +593,31 @@ function buildHeader() {
 function buildTable(month, filter, search) {
   document.getElementById('tableMonth').textContent = month === 'ACUM' ? 'Média Acumulada 2026' : month + ' 2026';
   let rows = UNITS.map((u, idx) => ({
-   // ========= ORDENAÇÃO =========
+  u,
+  idx: idx + 1,
+  vals: INDICATORS.map(ind => getMonthData(u, month, ind.key))
+}));
+
+rows = rows.filter(r => r.u.toLowerCase().includes(search));
+
+// ✅ FILTROS DIRETORIA
+const ranking = getRanking(month);
+
+if (quickFilter === 'top') {
+  const top10 = ranking.slice(0,10).map(r => r.unidade);
+  rows = rows.filter(r => top10.includes(r.u));
+}
+
+if (quickFilter === 'worst') {
+  const indicador = INDICATORS.find(i => i.key === 'DOAT');
+
+  rows = rows.filter(r => {
+    const val = getMonthData(r.u, month, 'DOAT');
+    return val !== null && val < indicador.meta;
+  });
+}
+
+// ✅ ORDENAÇÃO
 if (sortColumn) {
   const index = INDICATORS.findIndex(i => i.key === sortColumn);
 
@@ -604,6 +628,7 @@ if (sortColumn) {
     return sortDirection === 'asc' ? valA - valB : valB - valA;
   });
 }
+
 
 // ========= FILTROS DIRETORIA =========
 const ranking = getRanking(month);
