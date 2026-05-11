@@ -812,13 +812,16 @@ function buildExecutivePanel(month) {
   UNITS.forEach(u => {
     if (u === 'CAT CM') return;
 
-    const vals = INDICATORS.map(ind => getMonthData(u, month, ind.key)).filter(v => v !== null);
-    if (!vals.length) return;
+    const val = getMonthData(u, month, 'DECA');
+if (val === null) return;
 
-    totalUnits++;
+totalUnits++;
 
-    const allOk = vals.every((v,i) => v >= INDICATORS[i].meta);
-    const hasCritical = vals.some((v,i) => v <= INDICATORS[i].red);
+const meta = INDICATORS.find(i => i.key === 'DECA').meta;
+const red = INDICATORS.find(i => i.key === 'DECA').red;
+
+const allOk = val >= meta;
+const hasCritical = val <= red;
 
     if (allOk) okUnits++;
     else if (hasCritical) criticalUnits++;
