@@ -292,12 +292,14 @@ async function loadFromSheets() {
 
 /* ── STATE ── */
 let currentMonth = 'Abr';
-let sortColumn = null;
-let sortDirection = 'desc';
 let currentView = 'table';
 let currentIndicator = 'all';
 let selectedUnit = '';
-let trendCharts = {};
+
+let sortColumn = null;
+let sortDirection = 'desc';
+
+let quickFilter = 'all';
 
 document.getElementById('headerDate').textContent = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
 
@@ -591,6 +593,34 @@ function buildHeader() {
 function buildTable(month, filter, search) {
   document.getElementById('tableMonth').textContent = month === 'ACUM' ? 'Média Acumulada 2026' : month + ' 2026';
   let rows = UNITS.map((u, idx) => ({
+   // ========= ORDENAÇÃO =========
+if (sortColumn) {
+  const index = INDICATORS.findIndex(i => i.key === sortColumn);
+
+  rows.sort((a, b) => {
+    const valA = a.vals[index] ?? -Infinity;
+    const valB = b.vals[index] ?? -Infinity;
+
+    return sortDirection === 'asc' ? valA - valB : valB - valA;
+  });
+}
+
+// ========= FILTROS DIRETORIA =========
+const ranking = getRanking(month);
+
+if (quickFilter === 'top') {
+  const top10 = ranking.slice(0,10).map(r => r.unidade);
+  rows = rows.filter(r => top10.includes(r.u));
+}
+
+if (quickFilter === 'worst') {
+  const indicador = INDICATORS.find(i => i.key === 'DOAT');
+
+  rows = rows.filter(r => {
+    const val = getMonthData(r.u, month, 'DOAT');
+    return val !== null && val < indicador.meta;
+  });
+}
    
 if (sortColumn) {
   const index = INDICATORS.findIndex(i => i.key === sortColumn);
