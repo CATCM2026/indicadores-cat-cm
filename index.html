@@ -506,12 +506,12 @@ function buildUnitCharts(u) {
     if (!nums.length) return `<div class="chart-box anim"><div class="chart-box-header"><span class="chart-box-title">${ind.key}</span></div><p style="color:var(--text3);font-size:12px;">Sem dados</p></div>`;
     const min = Math.min(...nums); const max = Math.max(...nums);
     const range = Math.max(max - min, 0.01);
-    const metaPct = ((ind.meta - min) / range) * 100;
+    const metaPct = ind.meta;
     const bars = monthVals.map(({m, v}) => {
       if (v === null) return `<div class="bar-row"><span class="bar-label">${m}</span><div class="bar-track"><div class="bar-fill nok" style="width:2%"></div><div class="bar-meta-line" style="left:${Math.min(metaPct,98).toFixed(1)}%"></div></div><span class="bar-val" style="color:var(--text3)">—</span></div>`;
       const ok = v >= ind.meta; const bad = v <= ind.red;
       const barCls = ok ? 'ok' : bad ? 'nok' : 'warn';
-      const pct = ((v - min) / range) * 100;
+      const pct = Math.max(0, Math.min(v, 100));
       return `<div class="bar-row"><span class="bar-label">${m}</span><div class="bar-track"><div class="bar-fill ${barCls}" style="width:${pct.toFixed(1)}%"></div><div class="bar-meta-line" style="left:${Math.min(metaPct,98).toFixed(1)}%"></div></div><span class="bar-val ${ok?'ok':bad?'nok':'warn'}">${v.toFixed(2)}%</span></div>`;
     }).join('');
     const nokCount = monthVals.filter(({v}) => v !== null && v < ind.meta).length;
@@ -693,7 +693,7 @@ function buildCharts(month, filter, search) {
     const min = allVals.length ? Math.min(...allVals) : 0;
     const max = allVals.length ? Math.max(...allVals) : 100;
     const range = Math.max(max - min, 0.01);
-    const metaPct = ((ind.meta - min) / range) * 100;
+    const metaPct = ind.meta;
     const nok = units.filter(u => { const v = getMonthData(u, month, ind.key); return v === null || v < ind.meta; }).length;
     const displayed = isSingle ? units : units.slice(0, 18);
     const extra = !isSingle && units.length > 18 ? `<div style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center;">+ ${units.length-18} unidades — selecione o indicador para ver todas</div>` : '';
@@ -703,7 +703,7 @@ function buildCharts(month, filter, search) {
       if (v === null) return `<div class="bar-row"><span class="bar-label" title="${u}">${shortName}</span><div class="bar-track"><div class="bar-fill nok" style="width:2%"></div><div class="bar-meta-line" style="left:${Math.min(metaPct,98).toFixed(1)}%"></div></div><span class="bar-val" style="color:var(--text3)">—</span></div>`;
       const ok = v >= ind.meta; const bad = v <= ind.red;
       const barCls = ok ? 'ok' : bad ? 'nok' : 'warn';
-      const pct = ((v - min) / range) * 100;
+      const pct = Math.max(0, Math.min(v, 100));
       return `<div class="bar-row"><span class="bar-label" title="${u}">${shortName}</span><div class="bar-track"><div class="bar-fill ${barCls}" style="width:${pct.toFixed(1)}%"></div><div class="bar-meta-line" style="left:${Math.min(metaPct,98).toFixed(1)}%"></div></div><span class="bar-val ${ok?'ok':bad?'nok':'warn'}">${v.toFixed(2)}%</span></div>`;
     }).join('');
     return `<div class="chart-box anim${isSingle?' single-ind':''}">
