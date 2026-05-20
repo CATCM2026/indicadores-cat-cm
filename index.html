@@ -173,6 +173,11 @@
         <option value="nok">Com pendência</option>
         <option value="ok">Conforme</option>
       </select>
+      
+  <select id="sortOrder" onchange="applyFilters()">
+   <option value="desc">🔽 Maior → Menor</option>
+   <option value="asc">🔼 Menor → Maior</option>
+ </select>
       <div class="btn-group">
         <button id="btnTable" class="active" onclick="switchView('table', this)">Tabela</button>
         <button id="btnChart" onclick="switchView('chart', this)">Barras</button>
