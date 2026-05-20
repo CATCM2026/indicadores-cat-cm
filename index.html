@@ -170,9 +170,11 @@
       </select>
       
   <select id="sortOrder" onchange="applyFilters()">
-   <option value="desc">🔽 Maior → Menor</option>
-   <option value="asc">🔼 Menor → Maior</option>
- </select>
+  <option value="desc">🔽 Descendente </option>
+  <option value="asc">🔼 Ascendente </option>
+  <option value="az">🔤 A → Z</option>
+  <option value="za">🔤 Z → A</option>
+</select>
       <div class="btn-group">
         <button id="btnTable" class="active" onclick="switchView('table', this)">Tabela</button>
         <button id="btnChart" onclick="switchView('chart', this)">Barras</button>
@@ -629,9 +631,17 @@ function buildTable(month, filter, search) {
     const hasWarn= checkIdxs.some(i  => r.vals[i] !== null && r.vals[i] < INDICATORS[i].meta && r.vals[i] > INDICATORS[i].red);
     return { ...r, allOk, hasRed, hasWarn };
   });
- rows.sort((a, b) => {
-  let valA, valB;
 
+ rows.sort((a, b) => {
+
+  // ✅ ORDEM ALFABÉTICA
+  if (currentSort === 'az') {
+    return a.u.localeCompare(b.u);}
+  if (currentSort === 'za') {
+    return b.u.localeCompare(a.u);}
+
+  // ✅ ORDEM POR VALOR
+  let valA, valB;
   if (currentIndicator !== 'all') {
     const ind = INDICATORS.find(i => i.key === currentIndicator);
     const idx = INDICATORS.indexOf(ind);
@@ -648,6 +658,7 @@ function buildTable(month, filter, search) {
   }
   return currentSort === 'desc' ? valB - valA : valA - valB;
 });
+ 
   if (filter === 'nok') rows = rows.filter(r => !r.allOk);
   if (filter === 'ok')  rows = rows.filter(r => r.allOk);
   document.getElementById('tableCount').textContent = `${rows.length} unidade${rows.length!==1?'s':''} exibida${rows.length!==1?'s':''}`;
@@ -700,8 +711,7 @@ function buildTable(month, filter, search) {
 })()
   }
 </td>
- 
-    </tr>`
+     </tr>`
   ).join('');
 }
 
@@ -711,14 +721,33 @@ function buildCharts(month, filter, search) {
   const indsToShow = isSingle ? INDICATORS.filter(i => i.key === currentIndicator) : INDICATORS;
   grid.className = 'chart-grid' + (isSingle ? ' single-ind' : '');
   grid.innerHTML = indsToShow.map((ind, ii) => {
-    let units = UNITS
-  .filter(u => u.toLowerCase().includes(search))
-  .map(u => {
-    const v = getMonthData(u, month, ind.key);
-    return { u, v: v ?? -999 };
-  })
-  .sort((a, b) => currentSort === 'desc' ? b.v - a.v : a.v - b.v)
-  .map(x => x.u);
+
+   let units = UNITS
+  .filter(u => u.toLowerCase().includes(search));
+// ✅ ORDEM ALFABÉTICA
+if (currentSort === 'az') {
+  units.sort((a, b) => a.localeCompare(b));
+}
+else if (currentSort === 'za') {
+  units.sort((a, b) => b.localeCompare(a));}
+
+// ✅ ORDEM POR VALOR
+else {
+  units = units
+    .map(u => {
+      let v;
+      if (currentIndicator !== 'all') {
+        v = getMonthData(u, month, currentIndicator);
+      } else {
+        const vals = INDICATORS.map(ind => getMonthData(u, month, ind.key))
+                              .filter(x => x !== null);
+        v = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : -999;
+      }
+      return { u, v: v ?? -999 };
+    })
+    .sort((a, b) => currentSort === 'desc' ? b.v - a.v : a.v - b.v)
+    .map(x => x.u);
+}
     if (filter === 'nok') units = units.filter(u => { const v = getMonthData(u, month, ind.key); return v === null || v < ind.meta; });
     if (filter === 'ok') units = units.filter(u => { const v = getMonthData(u, month, ind.key); return v !== null && v >= ind.meta; });
     const allVals = UNITS.map(u => getMonthData(u, month, ind.key)).filter(v => v !== null);
