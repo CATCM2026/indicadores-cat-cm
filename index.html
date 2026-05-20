@@ -302,6 +302,7 @@ let currentView = 'table';
 let currentIndicator = 'all';
 let selectedUnit = '';
 let trendCharts = {};
+let currentSort = 'desc';
 
 document.getElementById('headerDate').textContent = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
 
@@ -628,6 +629,25 @@ function buildTable(month, filter, search) {
     const hasWarn= checkIdxs.some(i  => r.vals[i] !== null && r.vals[i] < INDICATORS[i].meta && r.vals[i] > INDICATORS[i].red);
     return { ...r, allOk, hasRed, hasWarn };
   });
+ rows.sort((a, b) => {
+  let valA, valB;
+
+  if (currentIndicator !== 'all') {
+    const ind = INDICATORS.find(i => i.key === currentIndicator);
+    const idx = INDICATORS.indexOf(ind);
+    valA = a.vals[idx] ?? -999;
+    valB = b.vals[idx] ?? -999;
+  } else {
+    const avg = (vals) => {
+      const valid = vals.filter(v => v !== null);
+      if (!valid.length) return -999;
+      return valid.reduce((acc, v) => acc + v, 0) / valid.length;
+    };
+    valA = avg(a.vals);
+    valB = avg(b.vals);
+  }
+  return currentSort === 'desc' ? valB - valA : valA - valB;
+});
   if (filter === 'nok') rows = rows.filter(r => !r.allOk);
   if (filter === 'ok')  rows = rows.filter(r => r.allOk);
   document.getElementById('tableCount').textContent = `${rows.length} unidade${rows.length!==1?'s':''} exibida${rows.length!==1?'s':''}`;
@@ -691,7 +711,14 @@ function buildCharts(month, filter, search) {
   const indsToShow = isSingle ? INDICATORS.filter(i => i.key === currentIndicator) : INDICATORS;
   grid.className = 'chart-grid' + (isSingle ? ' single-ind' : '');
   grid.innerHTML = indsToShow.map((ind, ii) => {
-    let units = UNITS.filter(u => u.toLowerCase().includes(search));
+    let units = UNITS
+  .filter(u => u.toLowerCase().includes(search))
+  .map(u => {
+    const v = getMonthData(u, month, ind.key);
+    return { u, v: v ?? -999 };
+  })
+  .sort((a, b) => currentSort === 'desc' ? b.v - a.v : a.v - b.v)
+  .map(x => x.u);
     if (filter === 'nok') units = units.filter(u => { const v = getMonthData(u, month, ind.key); return v === null || v < ind.meta; });
     if (filter === 'ok') units = units.filter(u => { const v = getMonthData(u, month, ind.key); return v !== null && v >= ind.meta; });
     const allVals = UNITS.map(u => getMonthData(u, month, ind.key)).filter(v => v !== null);
@@ -772,6 +799,7 @@ function switchView(view, btn) {
 
 /* ── APPLY FILTERS ── */
 function applyFilters() {
+ currentSort = document.getElementById('sortOrder')?.value || 'desc';
  
 if (!selectedUnit) {
   buildExecutivePanel(currentMonth);
