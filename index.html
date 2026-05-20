@@ -304,7 +304,9 @@ let currentView = 'table';
 let currentIndicator = 'all';
 let selectedUnit = '';
 let trendCharts = {};
-let currentSort = 'desc';
+
+let sortColumn = null;
+let sortDirection = 'desc';
 
 document.getElementById('headerDate').textContent = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
 
