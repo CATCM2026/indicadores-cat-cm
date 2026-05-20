@@ -607,18 +607,23 @@ function buildSummary(month) {
 }
 
 function buildHeader() {
-  document.getElementById('theadRow').innerHTML =
-    `<th class="unit-col">#</th><th class="unit-col">Unidade</th>` +
-    INDICATORS.map(i => {
-      const hl = currentIndicator === 'all' ? '' : currentIndicator === i.key ? ' col-highlight' : ' col-dim';
-      return `<th class="${hl}">${i.key}</th>`;
-    }).join('') + `<th>Status</th>`;
-  document.getElementById('metaRow').innerHTML =
-    `<th class="unit-col"></th><th class="unit-col" style="color:var(--text3);font-size:11px;">Meta →</th>` +
-    INDICATORS.map(i => {
-      const hl = currentIndicator === 'all' ? '' : currentIndicator === i.key ? ' col-highlight' : ' col-dim';
-      return `<th class="${hl}">${i.meta.toFixed(2)}%</th>`;
-    }).join('') + `<th></th>`;
+ document.getElementById('theadRow').innerHTML =
+ `<th class="unit-col">#</th><th class="unit-col">Unidade</th>` +
+ INDICATORS.map(i => {
+
+   const hl = currentIndicator === 'all'
+     ? ''
+     : currentIndicator === i.key ? ' col-highlight' : ' col-dim';
+
+   const isActive = sortColumn === i.key;
+   const arrow = isActive ? (sortDirection === 'desc' ? ' ↓' : ' ↑') : '';
+
+   return `
+     <th class="${hl}" onclick="sortByColumn('${i.key}')" style="cursor:pointer;">
+       ${i.key}${arrow}
+     </th>
+   `;
+ }).join('') + `<th>Status</th>`;
 }
 
 function buildTable(month, filter, search) {
