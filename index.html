@@ -29,7 +29,12 @@
   .controls-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 1.5rem; flex-wrap: wrap; }
   .page-title { font-size: 22px; font-weight: 600; letter-spacing: -0.5px; color: var(--text); }
   .page-subtitle { font-size: 13px; color: var(--text3); margin-top: 2px; }
-  .ctrl-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .ctrl-group {
+   <select id="sortOrder" onchange="applyFilters()">
+   <option value="desc">Maior → Menor</option>
+   <option value="asc">Menor → Maior</option>
+   </select>
+   display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   input[type="text"], select { font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 7px 12px; border-radius: var(--radius); border: 1px solid var(--border-med); background: var(--surface); color: var(--text); outline: none; transition: border-color 0.15s; }
   input[type="text"]:focus, select:focus { border-color: var(--accent); }
   input[type="text"] { width: 200px; }
