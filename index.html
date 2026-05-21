@@ -173,7 +173,7 @@
       </select>
       
   <select id="sortOrder" onchange="applyFilters()">
-  <option value="az">🔤 A → Z</option>
+  <option value="az" selected>🔤 A → Z</option>
   <option value="za">🔤 Z → A</option>
   <option value="desc">🔽 Descendente </option>
   <option value="asc">🔼 Ascendente </option>
@@ -891,7 +891,7 @@ function applyFilters() {
 const sortSelect = document.getElementById('sortOrder');
 
 if (!sortColumn) {
-   currentSort = sortSelect?.value || 'desc';
+   currentSort = sortSelect?.value || 'az';
 } else {
   sortSelect.value = sortDirection;
 }
