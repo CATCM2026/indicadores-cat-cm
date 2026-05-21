@@ -108,7 +108,10 @@
   .ind-tab.active { background: var(--text); color: #fff; border-color: var(--text); }
   .month-tab.acum-tab { border-style: dashed; font-style: italic; }
   .month-tab.acum-tab.active { background: var(--accent); border-color: var(--accent); font-style: italic; }
-  td.col-highlight, th.col-highlight { background: rgba(50,102,173,0.07) !important; }
+  td.col-highlight, th.col-highlight { 
+   background: rgba(50,102,173,0.12) !important;
+   font-weight: 600;
+   }
   td.col-dim, th.col-dim { opacity: 0.35; }
 
   /* Unit mode banner */
@@ -611,9 +614,20 @@ function buildHeader() {
  `<th class="unit-col">#</th><th class="unit-col">Unidade</th>` +
  INDICATORS.map(i => {
 
-   const hl = currentIndicator === 'all'
-     ? ''
-     : currentIndicator === i.key ? ' col-highlight' : ' col-dim';
+   let hl = '';
+
+// prioridade: coluna clicada
+if (sortColumn === i.key) {
+  hl = ' col-highlight';
+}
+// indicador selecionado (se não tiver clique)
+else if (currentIndicator !== 'all' && currentIndicator === i.key) {
+  hl = ' col-highlight';
+}
+// demais ficam apagadas
+else if (currentIndicator !== 'all') {
+  hl = ' col-dim';
+}
 
    const isActive = sortColumn === i.key;
    const arrow = isActive ? (sortDirection === 'desc' ? ' ↓' : ' ↑') : '';
@@ -702,7 +716,18 @@ rows.sort((a, b) => {
       <td class="unit-num">${String(idx).padStart(2,'0')}</td>
       <td class="unit-col">${u}</td>
       ${vals.map((v,i) => {
-        const hl = currentIndicator === 'all' ? '' : currentIndicator === INDICATORS[i].key ? ' col-highlight' : ' col-dim';
+       let hl = '';
+
+   if (sortColumn === INDICATORS[i].key) {
+     hl = ' col-highlight';
+   } 
+   else if (currentIndicator !== 'all' && currentIndicator === INDICATORS[i].key) {
+     hl = ' col-highlight';
+   } 
+   else if (currentIndicator !== 'all') {
+     hl = ' col-dim';
+   }
+              
         if (v === null) return `<td class="${hl}" style="color:var(--text3);font-size:11px;">—</td>`;
         const ok = v >= INDICATORS[i].meta; const bad = v <= INDICATORS[i].red;
         const cls = ok ? 'cell-ok' : bad ? 'cell-nok' : 'cell-warn';
