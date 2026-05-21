@@ -633,6 +633,10 @@ function sortByColumn(key) {   // 👈 PASSO 3 AQUI
     sortColumn = key;
     sortDirection = 'desc';
   }
+ 
+currentSort = sortDirection;
+  applyFilters();
+}
 
 function buildTable(month, filter, search) {
   document.getElementById('tableMonth').textContent = month === 'ACUM' ? 'Média Acumulada 2026' : month + ' 2026';
