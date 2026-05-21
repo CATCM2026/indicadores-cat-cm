@@ -848,8 +848,12 @@ function switchView(view, btn) {
 /* ── APPLY FILTERS ── */
 function applyFilters() {
  
+const sortSelect = document.getElementById('sortOrder');
+
 if (!sortColumn) {
-  currentSort = document.getElementById('sortOrder')?.value || 'desc';
+   currentSort = sortSelect?.value || 'desc';
+} else {
+  sortSelect.value = sortDirection;
 }
  
 if (!selectedUnit) {
