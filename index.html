@@ -804,7 +804,7 @@ else {
       }
       return { u, v: v ?? -999 };
     })
-    .sort((a, b) => currentSort === 'desc' ? b.v - a.v : a.v - b.v)
+    .sort((a, b) => currentSort === 'az' ? b.v - a.v : a.v - b.v)
     .map(x => x.u);
 }
     if (filter === 'nok') units = units.filter(u => { const v = getMonthData(u, month, ind.key); return v === null || v < ind.meta; });
