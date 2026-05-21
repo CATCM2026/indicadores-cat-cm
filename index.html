@@ -651,31 +651,46 @@ function buildTable(month, filter, search) {
     return { ...r, allOk, hasRed, hasWarn };
   });
 
- rows.sort((a, b) => {
+rows.sort((a, b) => {
 
-  // ✅ ORDEM ALFABÉTICA
-  if (currentSort === 'az') {
-    return a.u.localeCompare(b.u);}
-  if (currentSort === 'za') {
-    return b.u.localeCompare(a.u);}
-
-  // ✅ ORDEM POR VALOR
   let valA, valB;
-  if (currentIndicator !== 'all') {
-    const ind = INDICATORS.find(i => i.key === currentIndicator);
-    const idx = INDICATORS.indexOf(ind);
-    valA = a.vals[idx] ?? -999;
-    valB = b.vals[idx] ?? -999;
-  } else {
+
+  // ✅ PRIORIDADE: clique na coluna
+  if (sortColumn) {
+    const idx = INDICATORS.findIndex(i => i.key === sortColumn);
+
+    valA = a.vals[idx];
+    valB = b.vals[idx];
+  }
+
+  // ✅ indicador selecionado
+  else if (currentIndicator !== 'all') {
+    const idx = INDICATORS.findIndex(i => i.key === currentIndicator);
+
+    valA = a.vals[idx];
+    valB = b.vals[idx];
+  }
+
+  // ✅ todos (usa média)
+  else {
     const avg = (vals) => {
-      const valid = vals.filter(v => v !== null);
-      if (!valid.length) return -999;
-      return valid.reduce((acc, v) => acc + v, 0) / valid.length;
+      const valid = vals.filter(v => typeof v === 'number');
+      if (!valid.length) return null;
+      return valid.reduce((a, b) => a + b, 0) / valid.length;
     };
+
     valA = avg(a.vals);
     valB = avg(b.vals);
   }
-  return currentSort === 'desc' ? valB - valA : valA - valB;
+
+  // ✅ tratar null corretamente (manda pro final)
+  if (valA === null || valA === undefined) valA = -Infinity;
+  if (valB === null || valB === undefined) valB = -Infinity;
+
+  // ✅ ordenar
+  return sortDirection === 'desc'
+    ? valB - valA
+    : valA - valB;
 });
  
   if (filter === 'nok') rows = rows.filter(r => !r.allOk);
