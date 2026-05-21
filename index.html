@@ -625,6 +625,14 @@ function buildHeader() {
    `;
  }).join('') + `<th>Status</th>`;
 }
+ 
+function sortByColumn(key) {   // 👈 PASSO 3 AQUI
+  if (sortColumn === key) {
+    sortDirection = sortDirection === 'desc' ? 'asc' : 'desc';
+  } else {
+    sortColumn = key;
+    sortDirection = 'desc';
+  }
 
 function buildTable(month, filter, search) {
   document.getElementById('tableMonth').textContent = month === 'ACUM' ? 'Média Acumulada 2026' : month + ' 2026';
