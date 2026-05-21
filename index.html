@@ -847,7 +847,10 @@ function switchView(view, btn) {
 
 /* ── APPLY FILTERS ── */
 function applyFilters() {
- currentSort = document.getElementById('sortOrder')?.value || 'desc';
+ 
+if (!sortColumn) {
+  currentSort = document.getElementById('sortOrder')?.value || 'desc';
+}
  
 if (!selectedUnit) {
   buildExecutivePanel(currentMonth);
