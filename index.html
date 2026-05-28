@@ -173,7 +173,7 @@
       </select>
       
   <select id="sortOrder" onchange="applyFilters()">
-  <option value="az" selected>🔤 A → Z</option>
+  <option value="az">🔤 A → Z</option>
   <option value="za">🔤 Z → A</option>
   <option value="desc">🔽 Descendente </option>
   <option value="asc">🔼 Ascendente </option>
@@ -307,7 +307,7 @@ let currentView = 'table';
 let currentIndicator = 'all';
 let selectedUnit = '';
 let trendCharts = {};
-let currentSort = 'az'
+
 let sortColumn = null;
 let sortDirection = 'desc';
 
@@ -804,7 +804,7 @@ else {
       }
       return { u, v: v ?? -999 };
     })
-    .sort((a, b) => currentSort === 'az' ? b.v - a.v : a.v - b.v)
+    .sort((a, b) => currentSort === 'desc' ? b.v - a.v : a.v - b.v)
     .map(x => x.u);
 }
     if (filter === 'nok') units = units.filter(u => { const v = getMonthData(u, month, ind.key); return v === null || v < ind.meta; });
@@ -891,7 +891,7 @@ function applyFilters() {
 const sortSelect = document.getElementById('sortOrder');
 
 if (!sortColumn) {
-   currentSort = sortSelect?.value || 'az';
+   currentSort = sortSelect?.value || 'desc';
 } else {
   sortSelect.value = sortDirection;
 }
