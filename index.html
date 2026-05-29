@@ -655,6 +655,29 @@ function buildTable(month, filter, search) {
   let rows = UNITS.map((u, idx) => ({ u, idx: idx+1, vals: INDICATORS.map(ind => getMonthData(u, month, ind.key)) }))
     .filter(r => r.u.toLowerCase().includes(search));
   rows = rows.map(r => {
+   rows.sort((a, b) => {
+
+  // ✅ se clicou na coluna
+  if (sortColumn) {
+    const idx = INDICATORS.findIndex(i => i.key === sortColumn);
+
+    let valA = a.vals[idx];
+    let valB = b.vals[idx];
+
+    if (valA == null) valA = -Infinity;
+    if (valB == null) valB = -Infinity;
+
+    const dir = sortDirections[sortColumn] || 'desc';
+
+    return dir === 'desc' ? valB - valA : valA - valB;
+  }
+
+  // ✅ ordem padrão: alfabética
+  if (currentSort === 'az') return a.u.localeCompare(b.u);
+  if (currentSort === 'za') return b.u.localeCompare(a.u);
+
+  return 0;
+});
     const checkInds = currentIndicator === 'all' ? INDICATORS : INDICATORS.filter(i => i.key === currentIndicator);
     const checkIdxs = checkInds.map(i => INDICATORS.indexOf(i));
     const allOk  = checkIdxs.every(i => r.vals[i] !== null && r.vals[i] >= INDICATORS[i].meta);
