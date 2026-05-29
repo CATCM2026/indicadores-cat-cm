@@ -655,9 +655,20 @@ function buildTable(month, filter, search) {
   let rows = UNITS.map((u, idx) => ({ u, idx: idx+1, vals: INDICATORS.map(ind => getMonthData(u, month, ind.key)) }))
     .filter(r => r.u.toLowerCase().includes(search));
   rows = rows.map(r => {
-   rows.sort((a, b) => {
+    const checkInds = currentIndicator === 'all' ? INDICATORS : INDICATORS.filter(i => i.key === currentIndicator);
+    const checkIdxs = checkInds.map(i => INDICATORS.indexOf(i));
+    const allOk  = checkIdxs.every(i => r.vals[i] !== null && r.vals[i] >= INDICATORS[i].meta);
+    const hasRed = checkIdxs.some(i  => r.vals[i] !== null && r.vals[i] <= INDICATORS[i].red);
+    const hasWarn= checkIdxs.some(i  => r.vals[i] !== null && r.vals[i] < INDICATORS[i].meta && r.vals[i] > INDICATORS[i].red);
+    return { ...r, allOk, hasRed, hasWarn };
+  });
+ rows.sort((a, b) => {
 
-  // ✅ se clicou na coluna
+  // ✅ 1. FIXAR CAT CM NO TOPO
+  if (a.u === 'CAT CM') return -1;
+  if (b.u === 'CAT CM') return 1;
+
+  // ✅ 2. ordenação normal por coluna clicada
   if (sortColumn) {
     const idx = INDICATORS.findIndex(i => i.key === sortColumn);
 
@@ -672,19 +683,12 @@ function buildTable(month, filter, search) {
     return dir === 'desc' ? valB - valA : valA - valB;
   }
 
-  // ✅ ordem padrão: alfabética
+  // ✅ 3. ordem alfabética
   if (currentSort === 'az') return a.u.localeCompare(b.u);
   if (currentSort === 'za') return b.u.localeCompare(a.u);
 
   return 0;
-});
-    const checkInds = currentIndicator === 'all' ? INDICATORS : INDICATORS.filter(i => i.key === currentIndicator);
-    const checkIdxs = checkInds.map(i => INDICATORS.indexOf(i));
-    const allOk  = checkIdxs.every(i => r.vals[i] !== null && r.vals[i] >= INDICATORS[i].meta);
-    const hasRed = checkIdxs.some(i  => r.vals[i] !== null && r.vals[i] <= INDICATORS[i].red);
-    const hasWarn= checkIdxs.some(i  => r.vals[i] !== null && r.vals[i] < INDICATORS[i].meta && r.vals[i] > INDICATORS[i].red);
-    return { ...r, allOk, hasRed, hasWarn };
-  });
+}); 
   if (filter === 'nok') rows = rows.filter(r => !r.allOk);
   if (filter === 'ok')  rows = rows.filter(r => r.allOk);
   document.getElementById('tableCount').textContent = `${rows.length} unidade${rows.length!==1?'s':''} exibida${rows.length!==1?'s':''}`;
