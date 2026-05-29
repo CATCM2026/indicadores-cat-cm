@@ -701,9 +701,9 @@ function buildTable(month, filter, search) {
   if (filter === 'ok')  rows = rows.filter(r => r.allOk);
   document.getElementById('tableCount').textContent = `${rows.length} unidade${rows.length!==1?'s':''} exibida${rows.length!==1?'s':''}`;
   if (!rows.length) { document.getElementById('tableBody').innerHTML = `<tr><td colspan="${INDICATORS.length+3}" class="empty-state">Nenhuma unidade encontrada</td></tr>`; return; }
-  document.getElementById('tableBody').innerHTML = rows.map(({u, idx, vals, allOk, hasWarn, hasRed}) =>
+  document.getElementById('tableBody').innerHTML = rows.map(({u, vals, allOk, hasWarn, hasRed}, i) =>
     `<tr class="anim ${u === 'CAT CM' ? 'row-catcm' : ''}">
-      <td class="unit-num">${String(idx).padStart(2,'0')}</td>
+      <td class="unit-num">${String(i + 1).padStart(2,'0')}</td>
       <td class="unit-col">${u}</td>
       ${vals.map((v,i) => {
         const hl = currentIndicator === 'all' ? '' : currentIndicator === INDICATORS[i].key ? ' col-highlight' : ' col-dim';
