@@ -701,61 +701,71 @@ function buildTable(month, filter, search) {
   if (filter === 'ok')  rows = rows.filter(r => r.allOk);
   document.getElementById('tableCount').textContent = `${rows.length} unidade${rows.length!==1?'s':''} exibida${rows.length!==1?'s':''}`;
   if (!rows.length) { document.getElementById('tableBody').innerHTML = `<tr><td colspan="${INDICATORS.length+3}" class="empty-state">Nenhuma unidade encontrada</td></tr>`; return; }
-  document.getElementById('tableBody').innerHTML = rows.map(({u, vals, allOk, hasWarn, hasRed}, i) =>
-    `<tr class="anim ${u === 'CAT CM' ? 'row-catcm' : ''}">
-      <td class="unit-num">${String(i + 1).padStart(2,'0')}</td>
-      <td class="unit-col">${u}</td>
-      ${vals.map((v,i) => {
-  const hl = currentIndicator === 'all' ? '' : currentIndicator === INDICATORS[i].key ? ' col-highlight' : ' col-dim';
+ document.getElementById('tableBody').innerHTML = rows.map(({u, vals}, i) =>
 
-  if (v === null) {
-    return `<td class="${hl}" style="color:var(--text3);font-size:11px;">—</td>`;
-  }
+  `<tr class="anim ${u === 'CAT CM' ? 'row-catcm' : ''}">
 
-  const ok = v >= INDICATORS[i].meta;
-  const bad = v <= INDICATORS[i].red;
-  const cls = ok ? 'cell-ok' : bad ? 'cell-nok' : 'cell-warn';
+    <td class="unit-num">${String(i + 1).padStart(2,'0')}</td>
+    <td class="unit-col">${u}</td>
 
-  return `<td class="${cls}${hl}">
-    ${v.toFixed(2)}%
-    <div style="font-size:10px;color:#888;">
-      ${(v - INDICATORS[i].meta >= 0 ? '+' : '') + (v - INDICATORS[i].meta).toFixed(2)}
-    </div>
-  </td>`;
-}).join('')}
-<td>
-  ${
-    (() => {
+    ${vals.map((v,i) => {
+      const hl = currentIndicator === 'all'
+        ? ''
+        : currentIndicator === INDICATORS[i].key
+          ? ' col-highlight'
+          : ' col-dim';
 
- if (currentIndicator !== 'all') {
-   const ind = INDICATORS.find(i => i.key === currentIndicator);
-   const idx = INDICATORS.indexOf(ind);
-   const v = vals[idx];
+      if (v === null) {
+        return `<td class="${hl}" style="color:var(--text3);font-size:11px;">—</td>`;
+      }
 
-   if (v === null || isNaN(v)) {
-     return '<span style="color:var(--text3);font-size:11px;">—</span>';
-   }
+      const ok = v >= INDICATORS[i].meta;
+      const bad = v <= INDICATORS[i].red;
+      const cls = ok ? 'cell-ok' : bad ? 'cell-nok' : 'cell-warn';
 
-   if (v >= ind.meta) {
-     return '<span class="badge badge-ok">✅ Conforme</span>';
-   }
-   if (v <= ind.red) {
-     return '<span class="badge badge-nok">⛔ Crítico</span>';
-   }
-   return '<span class="badge" style="background:var(--amber-bg);color:var(--amber);">⚠️ Atenção</span>';
- }
+      return `<td class="${cls}${hl}">
+        ${v.toFixed(2)}%
+        <div style="font-size:10px;color:#888;">
+          ${(v - INDICATORS[i].meta >= 0 ? '+' : '') + (v - INDICATORS[i].meta).toFixed(2)}
+        </div>
+      </td>`;
+    }).join('')}
 
- const abaixoMeta = vals.filter((v,i) =>
-   v !== null && !isNaN(v) && v < INDICATORS[i].meta
- ).length;
+    <td>
+      ${(() => {
 
- if (abaixoMeta === 0) return '<span class="badge badge-ok">✅ Conforme</span>';
- if (abaixoMeta >= 3) return '<span class="badge badge-nok">⛔ Crítico</span>';
- return '<span class="badge" style="background:var(--amber-bg);color:var(--amber);">⚠️ Atenção</span>';
+        if (currentIndicator !== 'all') {
+          const ind = INDICATORS.find(i => i.key === currentIndicator);
+          const idx = INDICATORS.indexOf(ind);
+          const v = vals[idx];
 
-    })()
-  }
-</td>
+          if (v === null || isNaN(v)) {
+            return '<span style="color:var(--text3);font-size:11px;">—</span>';
+          }
+
+          if (v >= ind.meta) {
+            return '<span class="badge badge-ok">✅ Conforme</span>';
+          }
+          if (v <= ind.red) {
+            return '<span class="badge badge-nok">⛔ Crítico</span>';
+          }
+          return '<span class="badge" style="background:var(--amber-bg);color:var(--amber);">⚠️ Atenção</span>';
+        }
+
+        const abaixoMeta = vals.filter((v,i) =>
+          v !== null && !isNaN(v) && v < INDICATORS[i].meta
+        ).length;
+
+        if (abaixoMeta === 0) return '<span class="badge badge-ok">✅ Conforme</span>';
+        if (abaixoMeta >= 3) return '<span class="badge badge-nok">⛔ Crítico</span>';
+        return '<span class="badge" style="background:var(--amber-bg);color:var(--amber);">⚠️ Atenção</span>';
+
+      })()}
+    </td>
+
+  </tr>`
+
+).join('');
  if (currentIndicator !== 'all') {
    const ind = INDICATORS.find(i => i.key === currentIndicator);
    const idx = INDICATORS.indexOf(ind);
