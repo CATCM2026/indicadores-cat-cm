@@ -664,7 +664,10 @@ function buildHeader() {
 
 function buildTable(month, filter, search) {
 document.getElementById('tableMonth').textContent = month === 'ACUM' ? 'Média Acumulada 2026' : month + ' 2026';
-let rows = UNITS.map((u, idx) => ({ u, idx: idx+1, vals: INDICATORS.map(ind => getMonthData(u, month, ind.key)) }))
+let rows = UNITS.map(u => ({
+  u,
+  vals: INDICATORS.map(ind => getMonthData(u, month, ind.key)) 
+}));
 .filter(r => r.u.toLowerCase().includes(search));
 rows = rows.map(r => {
 const checkInds = currentIndicator === 'all' ? INDICATORS : INDICATORS.filter(i => i.key === currentIndicator);
@@ -701,11 +704,11 @@ if (sortColumn) {
  
 document.getElementById('tableCount').textContent = `${rows.length} unidade${rows.length!==1?'s':''} exibida${rows.length!==1?'s':''}`;
 if (!rows.length) { document.getElementById('tableBody').innerHTML = `<tr><td colspan="${INDICATORS.length+3}" class="empty-state">Nenhuma unidade encontrada</td></tr>`; return; }
-document.getElementById('tableBody').innerHTML = rows.map(({u, idx, vals, allOk, hasWarn, hasRed}) =>
-<tr class="anim" style="${u === 'CAT CM' ? 'font-weight:600;background:#f0f4ff;' : ''}">
-     <td class="unit-num">${String(idx).padStart(2,'0')}</td>
-     <td class="unit-col">${u}</td>
-     ${vals.map((v,i) => {
+document.getElementById('tableBody').innerHTML = rows.map((row, index) =>
+`<tr class="anim" style="${u === 'CAT CM' ? 'font-weight:600;background:#f0f4ff;' : ''}">
+     <<td class="unit-num">${String(index + 1).padStart(2,'0')}</td>
+     <td class="unit-col">${row.u}</td>
+     ${row.vals.map((v,i) => {
        const hl = currentIndicator === 'all' ? '' : currentIndicator === INDICATORS[i].key ? ' col-highlight' : ' col-dim';
        if (v === null) return `<td class="${hl}" style="color:var(--text3);font-size:11px;">—</td>`;
        const ok = v >= INDICATORS[i].meta; const bad = v <= INDICATORS[i].red;
