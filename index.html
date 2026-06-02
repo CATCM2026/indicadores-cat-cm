@@ -702,7 +702,7 @@ if (sortColumn) {
 document.getElementById('tableCount').textContent = `${rows.length} unidade${rows.length!==1?'s':''} exibida${rows.length!==1?'s':''}`;
 if (!rows.length) { document.getElementById('tableBody').innerHTML = `<tr><td colspan="${INDICATORS.length+3}" class="empty-state">Nenhuma unidade encontrada</td></tr>`; return; }
 document.getElementById('tableBody').innerHTML = rows.map(({u, idx, vals, allOk, hasWarn, hasRed}) =>
-     <tr class="anim" style="${u === 'CAT CM' ? 'font-weight:600;background:#f0f4ff;' : ''}">
+<tr class="anim" style="${u === 'CAT CM' ? 'font-weight:600;background:#f0f4ff;' : ''}">
      <td class="unit-num">${String(idx).padStart(2,'0')}</td>
      <td class="unit-col">${u}</td>
      ${vals.map((v,i) => {
