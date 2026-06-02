@@ -711,9 +711,14 @@ function buildTable(month, filter, search) {
         const ok = v >= INDICATORS[i].meta; const bad = v <= INDICATORS[i].red;
         const cls = ok ? 'cell-ok' : bad ? 'cell-nok' : 'cell-warn';
         const diff = (v - INDICATORS[i].meta).toFixed(2); const sign = diff >= 0 ? '+' : '';
-        return `<td class="${cls}${hl}" title="${sign}${diff}pp da meta">${v.toFixed(2)}%</td>`;
-      }).join('')}
-      <td>
+       return `
+       <td class="${cls}${hl}">
+         ${v.toFixed(2)}%
+         <div style="font-size:10px;color:#888;">
+             ${diff >= 0 ? '+' : ''}${diff}
+         </div>
+       </td>
+`; 
   ${
     (() => {
  if (currentIndicator !== 'all') {
