@@ -29,7 +29,7 @@
   .controls-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 1.5rem; flex-wrap: wrap; }
   .page-title { font-size: 22px; font-weight: 600; letter-spacing: -0.5px; color: var(--text); }
   .page-subtitle { font-size: 13px; color: var(--text3); margin-top: 2px; }
-  .ctrl-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .ctrl-group {display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   input[type="text"], select { font-family: 'DM Sans', sans-serif; font-size: 13px; padding: 7px 12px; border-radius: var(--radius); border: 1px solid var(--border-med); background: var(--surface); color: var(--text); outline: none; transition: border-color 0.15s; }
   input[type="text"]:focus, select:focus { border-color: var(--accent); }
   input[type="text"] { width: 200px; }
@@ -108,7 +108,10 @@
   .ind-tab.active { background: var(--text); color: #fff; border-color: var(--text); }
   .month-tab.acum-tab { border-style: dashed; font-style: italic; }
   .month-tab.acum-tab.active { background: var(--accent); border-color: var(--accent); font-style: italic; }
-  td.col-highlight, th.col-highlight { background: rgba(50,102,173,0.07) !important; }
+  td.col-highlight, th.col-highlight { 
+   background: rgba(50,102,173,0.12) !important;
+   font-weight: 600;
+   }
   td.col-dim, th.col-dim { opacity: 0.35; }
 
   /* Unit mode banner */
@@ -168,6 +171,13 @@
         <option value="nok">Com pendência</option>
         <option value="ok">Conforme</option>
       </select>
+      
+  <select id="sortOrder" onchange="applyFilters()">
+  <option value="az">🔤 A → Z</option>
+  <option value="za">🔤 Z → A</option>
+  <option value="desc">🔽 Descendente </option>
+  <option value="asc">🔼 Ascendente </option>
+</select>
       <div class="btn-group">
         <button id="btnTable" class="active" onclick="switchView('table', this)">Tabela</button>
         <button id="btnChart" onclick="switchView('chart', this)">Barras</button>
@@ -297,6 +307,9 @@ let currentView = 'table';
 let currentIndicator = 'all';
 let selectedUnit = '';
 let trendCharts = {};
+
+let sortColumn = null;
+let sortDirection = 'desc';
 
 document.getElementById('headerDate').textContent = new Date().toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
 
@@ -506,12 +519,12 @@ function buildUnitCharts(u) {
     if (!nums.length) return `<div class="chart-box anim"><div class="chart-box-header"><span class="chart-box-title">${ind.key}</span></div><p style="color:var(--text3);font-size:12px;">Sem dados</p></div>`;
     const min = Math.min(...nums); const max = Math.max(...nums);
     const range = Math.max(max - min, 0.01);
-    const metaPct = ((ind.meta - min) / range) * 100;
+    const metaPct = ind.meta;
     const bars = monthVals.map(({m, v}) => {
       if (v === null) return `<div class="bar-row"><span class="bar-label">${m}</span><div class="bar-track"><div class="bar-fill nok" style="width:2%"></div><div class="bar-meta-line" style="left:${Math.min(metaPct,98).toFixed(1)}%"></div></div><span class="bar-val" style="color:var(--text3)">—</span></div>`;
       const ok = v >= ind.meta; const bad = v <= ind.red;
       const barCls = ok ? 'ok' : bad ? 'nok' : 'warn';
-      const pct = ((v - min) / range) * 100;
+      const pct = Math.max(0, Math.min(v, 100));
       return `<div class="bar-row"><span class="bar-label">${m}</span><div class="bar-track"><div class="bar-fill ${barCls}" style="width:${pct.toFixed(1)}%"></div><div class="bar-meta-line" style="left:${Math.min(metaPct,98).toFixed(1)}%"></div></div><span class="bar-val ${ok?'ok':bad?'nok':'warn'}">${v.toFixed(2)}%</span></div>`;
     }).join('');
     const nokCount = monthVals.filter(({v}) => v !== null && v < ind.meta).length;
@@ -597,18 +610,46 @@ function buildSummary(month) {
 }
 
 function buildHeader() {
-  document.getElementById('theadRow').innerHTML =
-    `<th class="unit-col">#</th><th class="unit-col">Unidade</th>` +
-    INDICATORS.map(i => {
-      const hl = currentIndicator === 'all' ? '' : currentIndicator === i.key ? ' col-highlight' : ' col-dim';
-      return `<th class="${hl}">${i.key}</th>`;
-    }).join('') + `<th>Status</th>`;
-  document.getElementById('metaRow').innerHTML =
-    `<th class="unit-col"></th><th class="unit-col" style="color:var(--text3);font-size:11px;">Meta →</th>` +
-    INDICATORS.map(i => {
-      const hl = currentIndicator === 'all' ? '' : currentIndicator === i.key ? ' col-highlight' : ' col-dim';
-      return `<th class="${hl}">${i.meta.toFixed(2)}%</th>`;
-    }).join('') + `<th></th>`;
+ document.getElementById('theadRow').innerHTML =
+ `<th class="unit-col">#</th><th class="unit-col">Unidade</th>` +
+ INDICATORS.map(i => {
+
+   let hl = '';
+
+// prioridade: coluna clicada
+if (sortColumn === i.key) {
+  hl = ' col-highlight';
+}
+// indicador selecionado (se não tiver clique)
+else if (currentIndicator !== 'all' && currentIndicator === i.key) {
+  hl = ' col-highlight';
+}
+// demais ficam apagadas
+else if (currentIndicator !== 'all') {
+  hl = ' col-dim';
+}
+
+   const isActive = sortColumn === i.key;
+   const arrow = isActive ? (sortDirection === 'desc' ? ' ↓' : ' ↑') : '';
+
+   return `
+     <th class="${hl}" onclick="sortByColumn('${i.key}')" style="cursor:pointer;">
+       ${i.key}${arrow}
+     </th>
+   `;
+ }).join('') + `<th>Status</th>`;
+}
+ 
+function sortByColumn(key) {   // 👈 PASSO 3 AQUI
+  if (sortColumn === key) {
+    sortDirection = sortDirection === 'desc' ? 'asc' : 'desc';
+  } else {
+    sortColumn = key;
+    sortDirection = 'desc';
+  }
+ 
+currentSort = sortDirection;
+  applyFilters();
 }
 
 function buildTable(month, filter, search) {
@@ -623,6 +664,49 @@ function buildTable(month, filter, search) {
     const hasWarn= checkIdxs.some(i  => r.vals[i] !== null && r.vals[i] < INDICATORS[i].meta && r.vals[i] > INDICATORS[i].red);
     return { ...r, allOk, hasRed, hasWarn };
   });
+
+rows.sort((a, b) => {
+
+  let valA, valB;
+
+  // ✅ PRIORIDADE: clique na coluna
+  if (sortColumn) {
+    const idx = INDICATORS.findIndex(i => i.key === sortColumn);
+
+    valA = a.vals[idx];
+    valB = b.vals[idx];
+  }
+
+  // ✅ indicador selecionado
+  else if (currentIndicator !== 'all') {
+    const idx = INDICATORS.findIndex(i => i.key === currentIndicator);
+
+    valA = a.vals[idx];
+    valB = b.vals[idx];
+  }
+
+  // ✅ todos (usa média)
+  else {
+    const avg = (vals) => {
+      const valid = vals.filter(v => typeof v === 'number');
+      if (!valid.length) return null;
+      return valid.reduce((a, b) => a + b, 0) / valid.length;
+    };
+
+    valA = avg(a.vals);
+    valB = avg(b.vals);
+  }
+
+  // ✅ tratar null corretamente (manda pro final)
+  if (valA === null || valA === undefined) valA = -Infinity;
+  if (valB === null || valB === undefined) valB = -Infinity;
+
+  // ✅ ordenar
+  return sortDirection === 'desc'
+    ? valB - valA
+    : valA - valB;
+});
+ 
   if (filter === 'nok') rows = rows.filter(r => !r.allOk);
   if (filter === 'ok')  rows = rows.filter(r => r.allOk);
   document.getElementById('tableCount').textContent = `${rows.length} unidade${rows.length!==1?'s':''} exibida${rows.length!==1?'s':''}`;
@@ -632,7 +716,18 @@ function buildTable(month, filter, search) {
       <td class="unit-num">${String(idx).padStart(2,'0')}</td>
       <td class="unit-col">${u}</td>
       ${vals.map((v,i) => {
-        const hl = currentIndicator === 'all' ? '' : currentIndicator === INDICATORS[i].key ? ' col-highlight' : ' col-dim';
+       let hl = '';
+
+   if (sortColumn === INDICATORS[i].key) {
+     hl = ' col-highlight';
+   } 
+   else if (currentIndicator !== 'all' && currentIndicator === INDICATORS[i].key) {
+     hl = ' col-highlight';
+   } 
+   else if (currentIndicator !== 'all') {
+     hl = ' col-dim';
+   }
+              
         if (v === null) return `<td class="${hl}" style="color:var(--text3);font-size:11px;">—</td>`;
         const ok = v >= INDICATORS[i].meta; const bad = v <= INDICATORS[i].red;
         const cls = ok ? 'cell-ok' : bad ? 'cell-nok' : 'cell-warn';
@@ -675,8 +770,7 @@ function buildTable(month, filter, search) {
 })()
   }
 </td>
- 
-    </tr>`
+     </tr>`
   ).join('');
 }
 
@@ -686,14 +780,40 @@ function buildCharts(month, filter, search) {
   const indsToShow = isSingle ? INDICATORS.filter(i => i.key === currentIndicator) : INDICATORS;
   grid.className = 'chart-grid' + (isSingle ? ' single-ind' : '');
   grid.innerHTML = indsToShow.map((ind, ii) => {
-    let units = UNITS.filter(u => u.toLowerCase().includes(search));
+
+   let units = UNITS
+  .filter(u => u.toLowerCase().includes(search));
+// ✅ ORDEM ALFABÉTICA
+if (currentSort === 'az') {
+  units.sort((a, b) => a.localeCompare(b));
+}
+else if (currentSort === 'za') {
+  units.sort((a, b) => b.localeCompare(a));}
+
+// ✅ ORDEM POR VALOR
+else {
+  units = units
+    .map(u => {
+      let v;
+      if (currentIndicator !== 'all') {
+        v = getMonthData(u, month, currentIndicator);
+      } else {
+        const vals = INDICATORS.map(ind => getMonthData(u, month, ind.key))
+                              .filter(x => x !== null);
+        v = vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : -999;
+      }
+      return { u, v: v ?? -999 };
+    })
+    .sort((a, b) => currentSort === 'desc' ? b.v - a.v : a.v - b.v)
+    .map(x => x.u);
+}
     if (filter === 'nok') units = units.filter(u => { const v = getMonthData(u, month, ind.key); return v === null || v < ind.meta; });
     if (filter === 'ok') units = units.filter(u => { const v = getMonthData(u, month, ind.key); return v !== null && v >= ind.meta; });
     const allVals = UNITS.map(u => getMonthData(u, month, ind.key)).filter(v => v !== null);
     const min = allVals.length ? Math.min(...allVals) : 0;
     const max = allVals.length ? Math.max(...allVals) : 100;
     const range = Math.max(max - min, 0.01);
-    const metaPct = ((ind.meta - min) / range) * 100;
+    const metaPct = ind.meta;
     const nok = units.filter(u => { const v = getMonthData(u, month, ind.key); return v === null || v < ind.meta; }).length;
     const displayed = isSingle ? units : units.slice(0, 18);
     const extra = !isSingle && units.length > 18 ? `<div style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center;">+ ${units.length-18} unidades — selecione o indicador para ver todas</div>` : '';
@@ -703,7 +823,7 @@ function buildCharts(month, filter, search) {
       if (v === null) return `<div class="bar-row"><span class="bar-label" title="${u}">${shortName}</span><div class="bar-track"><div class="bar-fill nok" style="width:2%"></div><div class="bar-meta-line" style="left:${Math.min(metaPct,98).toFixed(1)}%"></div></div><span class="bar-val" style="color:var(--text3)">—</span></div>`;
       const ok = v >= ind.meta; const bad = v <= ind.red;
       const barCls = ok ? 'ok' : bad ? 'nok' : 'warn';
-      const pct = ((v - min) / range) * 100;
+      const pct = Math.max(0, Math.min(v, 100));
       return `<div class="bar-row"><span class="bar-label" title="${u}">${shortName}</span><div class="bar-track"><div class="bar-fill ${barCls}" style="width:${pct.toFixed(1)}%"></div><div class="bar-meta-line" style="left:${Math.min(metaPct,98).toFixed(1)}%"></div></div><span class="bar-val ${ok?'ok':bad?'nok':'warn'}">${v.toFixed(2)}%</span></div>`;
     }).join('');
     return `<div class="chart-box anim${isSingle?' single-ind':''}">
@@ -767,6 +887,14 @@ function switchView(view, btn) {
 
 /* ── APPLY FILTERS ── */
 function applyFilters() {
+ 
+const sortSelect = document.getElementById('sortOrder');
+
+if (!sortColumn) {
+   currentSort = sortSelect?.value || 'desc';
+} else {
+  sortSelect.value = sortDirection;
+}
  
 if (!selectedUnit) {
   buildExecutivePanel(currentMonth);
