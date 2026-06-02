@@ -676,6 +676,27 @@ return { ...r, allOk, hasRed, hasWarn };
 });
 if (filter === 'nok') rows = rows.filter(r => !r.allOk);
 if (filter === 'ok')  rows = rows.filter(r => r.allOk);
+ // ✅ ORDENAÇÃO
+if (sortColumn) {
+  const colIndex = INDICATORS.findIndex(i => i.key === sortColumn);
+
+  rows.sort((a, b) => {
+    const va = a.vals[colIndex];
+    const vb = b.vals[colIndex];
+
+    // trata null como menor valor
+    if (va === null) return 1;
+    if (vb === null) return -1;
+
+    if (sortDirections[sortColumn] === 'asc') {
+      return va - vb;
+    } else {
+      return vb - va;
+    }
+  });
+}
+``
+ 
 document.getElementById('tableCount').textContent = `${rows.length} unidade${rows.length!==1?'s':''} exibida${rows.length!==1?'s':''}`;
 if (!rows.length) { document.getElementById('tableBody').innerHTML = `<tr><td colspan="${INDICATORS.length+3}" class="empty-state">Nenhuma unidade encontrada</td></tr>`; return; }
 document.getElementById('tableBody').innerHTML = rows.map(({u, idx, vals, allOk, hasWarn, hasRed}) =>
