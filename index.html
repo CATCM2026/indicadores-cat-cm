@@ -179,7 +179,7 @@ td.col-dim, th.col-dim { opacity: 0.35; }
 <!-- UNIT SELECT ROW -->
 <div class="unit-select-row">
 <span class="unit-select-label">&#128269; Unidade:</span>
-<select id="unitSelect" onchange="onUnitSelect()">
+<select id="unitSelect" multiple onchange="onUnitSelect()">
 <option value="">— Todas as unidades —</option>
 </select>
 </div>
@@ -295,7 +295,7 @@ applyFilters();
 let currentMonth = 'Mai';
 let currentView = 'table';
 let currentIndicator = 'all';
-let selectedUnit = '';
+let selectedUnits = [];
 let trendCharts = {};
 let currentSort = 'az';
 let sortColumn = null;
@@ -314,28 +314,31 @@ sel.appendChild(opt);
 }
 
 function onUnitSelect() {
-selectedUnit = document.getElementById('unitSelect').value;
-if (selectedUnit) {
-document.getElementById('unitBanner').classList.add('visible');
-document.getElementById('unitBannerLabel').textContent = '📍 ' + selectedUnit;
-document.getElementById('monthTabs').style.display = 'none';
-document.getElementById('filterSel').style.display = 'none';
-document.getElementById('searchBox').style.display = 'none';
-} else {
-clearUnit();
-return;
-}
-applyFilters();
+  const select = document.getElementById('unitSelect');
+  selectedUnits = Array.from(select.selectedOptions).map(o => o.value);
+  if (selectedUnits.length > 0) {
+    document.getElementById('unitBanner').classList.add('visible');
+    document.getElementById('unitBannerLabel').textContent =
+      '📍 Comparando: ' + selectedUnits.join(', ');
+    document.getElementById('monthTabs').style.display = 'none';
+    document.getElementById('filterSel').style.display = 'none';
+    document.getElementById('searchBox').style.display = 'none';
+  } else {
+    clearUnit();
+    return;
+  }
+  applyFilters();
 }
 
 function clearUnit() {
-selectedUnit = '';
-document.getElementById('unitSelect').value = '';
-document.getElementById('unitBanner').classList.remove('visible');
-document.getElementById('monthTabs').style.display = 'flex';
-document.getElementById('filterSel').style.display = '';
-document.getElementById('searchBox').style.display = '';
-applyFilters();
+  selectedUnits = [];
+  const select = document.getElementById('unitSelect');
+  Array.from(select.options).forEach(o => o.selected = false);
+  document.getElementById('unitBanner').classList.remove('visible');
+  document.getElementById('monthTabs').style.display = 'flex';
+  document.getElementById('filterSel').style.display = '';
+  document.getElementById('searchBox').style.display = '';
+  applyFilters();
 }
 
 /* ── HELPERS ── */
@@ -830,6 +833,26 @@ y: { min: minV, max: maxV, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: {
 });
 }, 50);
 }
+ 
+function buildComparisonTable(units) {
+  document.getElementById('tableMonth').textContent = 'Comparativo';
+  document.getElementById('theadRow').innerHTML =
+    `<th>Unidade</th>` +
+    INDICATORS.map(i => `<th>${i.key}</th>`).join('');
+  document.getElementById('metaRow').innerHTML = '';
+  document.getElementById('tableBody').innerHTML = units.map(u => {
+    const vals = INDICATORS.map(ind => getMonthData(u, currentMonth, ind.key));
+    return `
+      <tr>
+        <td>${u}</td>
+        ${vals.map(v => {
+          if (v === null) return `<td>—</td>`;
+          return `<td>${v.toFixed(2)}%</td>`;
+        }).join('')}
+      </tr>
+    `;
+  }).join('');
+}
 
 /* ── SWITCH VIEW ── */
 function switchView(view, btn) {
@@ -844,35 +867,63 @@ applyFilters();
 
 /* ── APPLY FILTERS ── */
 function applyFilters() {
-
 if (!selectedUnit) {
 buildExecutivePanel(currentMonth);
 } else {
 document.getElementById('executivePanel').innerHTML = '';
 }
-
 const filter = document.getElementById('filterSel').value;
 const search = document.getElementById('searchBox').value.toLowerCase();
-
-if (selectedUnit) {
-// UNIT MODE
-buildUnitSummary(selectedUnit);
-if (currentView === 'table') { buildHeader(); buildUnitTable(selectedUnit); }
-else if (currentView === 'chart') buildUnitCharts(selectedUnit);
-else buildUnitTrend(selectedUnit);
-} else {
-// NORMAL MODE
-buildSummary(currentMonth);
+// ✅ NOVO CONTROLE DE MODOS
+if (selectedUnits.length > 1) {
+  // 🔥 MODO COMPARAÇÃO
+  document.getElementById('executivePanel').innerHTML = '';
+  buildHeader();
+  buildComparisonTable(selectedUnits);
+  if (currentView === 'chart') {
+    buildComparisonChart(selectedUnits);
+  }
+  return;
+}
+else if (selectedUnits.length === 1) {
+  // ✅ MODO UNIDADE (já existente)
+  const u = selectedUnits[0];
+  buildUnitSummary(u);
+  if (currentView === 'table') {
+    buildHeader();
+    buildUnitTable(u);
+  }
+  else if (currentView === 'chart') {
+    buildUnitCharts(u);
+  }
+  else {
+    buildUnitTrend(u);
+  }
+  return;
+}
+else {
+  // ✅ MODO NORMAL
+  buildSummary(currentMonth);
+  buildHeader();
+  if (currentView === 'table') {
+    buildTable(currentMonth, filter, search);
+  }
+  else if (currentView === 'chart') {
+    buildCharts(currentMonth, filter, search);
+  }
+  else {
+    buildTrend(filter, search);
+  }
+}
 buildHeader();
 if (currentView === 'table') buildTable(currentMonth, filter, search);
 else if (currentView === 'chart') buildCharts(currentMonth, filter, search);
 else buildTrend(filter, search);
 }
-}
 
 /* ── EXPORT CSV ── */
 function exportCSV() {
-if (selectedUnit) {
+if (selectedUnits.length === 1) {
 const u = selectedUnit;
 const header = ['Mês', ...INDICATORS.map(i => i.key), 'Status'].join(';');
 const metas = ['Meta', ...INDICATORS.map(i => i.meta.toFixed(2)+'%'), ''].join(';');
