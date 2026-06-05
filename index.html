@@ -317,7 +317,7 @@ function onUnitSelect() {
   const select = document.getElementById('unitSelect');
   selectedUnits = Array.from(select.selectedOptions)
   .map(o => o.value)
-  .filter(v => v !== null);
+  .filter(v => v !== 'ALL');
   if (selectedUnits.length > 0) {
     document.getElementById('unitBanner').classList.add('visible');
     document.getElementById('unitBannerLabel').textContent =
@@ -883,12 +883,6 @@ function buildComparisonTrend(units) {
          pointRadius: 3,
          pointHoverRadius: 6,
          tension: 0.3
-        };
-
-          backgroundColor: 'transparent',
-          borderWidth: 3,
-          pointHoverRadius: 3,
-          tension: 0.3
         };
       });
       // linha da meta
