@@ -808,7 +808,16 @@ function buildComparisonChart(units) {
           datasets: [{
             label: ind.key,
             data: dados,
-            backgroundColor: '#3266AD'
+            backgroundColor: dados.map((v, idx) => {
+
+  const ind = INDICATORS[i];
+
+  if (v === null) return '#ccc';
+  if (v >= ind.meta) return '#1D9E75'; // verde
+  if (v <= ind.red) return '#E24B4A'; // vermelho
+
+  return '#F5C842'; // amarelo
+})
           }]
         },
         options: {
@@ -842,7 +851,13 @@ function buildComparisonTrend(units) {
           const v = DATA[u][m][ind.key];
           return v !== null ? parseFloat(v.toFixed(2)) : null;
         });
-        const colors = ['#3266AD','#E24B4A','#1D9E75','#BA7517','#8E44AD','#2C3E50'];
+        const pontoCores = vals.map(v => {
+         if (v === null) return '#ccc';
+         if (v >= ind.meta) return '#1D9E75';
+         if (v <= ind.red) return '#E24B4A';
+
+  return '#F5C842';
+});
         return {
           label: u,
           data: vals,
