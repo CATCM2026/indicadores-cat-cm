@@ -931,7 +931,14 @@ y: { min: minV, max: maxV, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: {
 });
 }, 50);
 }
- 
+function getCellClass(valor, indicador) {
+  if (valor === null || isNaN(valor)) {
+    return '';
+  }
+  if (valor >= indicador.meta) return 'cell-ok';
+  if (valor <= indicador.red) return 'cell-nok';
+  return 'cell-warn';
+} 
 function buildComparisonTable(units) {
   document.getElementById('tableMonth').textContent = 'Comparativo';
   document.getElementById('theadRow').innerHTML =
@@ -945,7 +952,9 @@ function buildComparisonTable(units) {
         <td>${u}</td>
         ${vals.map(v => {
           if (v === null) return `<td>—</td>`;
-          return `<td>${v.toFixed(2)}%</td>`;
+          return `<td class="${getCellClass(v, INDICATORS[i])}">
+          ${v.toFixed(2)}%
+        </td>`;
         }).join('')}
       </tr>
     `;
