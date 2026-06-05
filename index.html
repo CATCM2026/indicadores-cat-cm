@@ -793,6 +793,41 @@ return `<div class="chart-box anim${isSingle?' single-ind':''}">
 }).join('');
 }
 
+function buildComparisonChart(units) {
+  const grid = document.getElementById('chartGrid');
+  grid.innerHTML = INDICATORS.map((ind, i) => {
+    const dados = units.map(u => getMonthData(u, currentMonth, ind.key));
+    const canvasId = "cmpChart" + i;
+    setTimeout(() => {
+      const ctx = document.getElementById(canvasId);
+      if (!ctx) return;
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: units,
+          datasets: [{
+            label: ind.key,
+            data: dados,
+            backgroundColor: '#3266AD'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } }
+        }
+      });
+    }, 50);
+
+    return `
+      <div class="chart-box">
+        <div class="chart-box-title">${ind.key}</div>
+        <canvas id="${canvasId}"></canvas>
+      </div>
+    `;
+  }).join('');
+}
+
+
 function buildTrend(filter, search) {
 Object.values(trendCharts).forEach(c => c.destroy());
 trendCharts = {};
@@ -867,14 +902,14 @@ applyFilters();
 
 /* ── APPLY FILTERS ── */
 function applyFilters() {
-if (!selectedUnit) {
+if (selectedUnits.length === 0) {
 buildExecutivePanel(currentMonth);
 } else {
 document.getElementById('executivePanel').innerHTML = '';
 }
 const filter = document.getElementById('filterSel').value;
 const search = document.getElementById('searchBox').value.toLowerCase();
-// ✅ NOVO CONTROLE DE MODOS
+// ✅ COMPARAÇÃO
 if (selectedUnits.length > 1) {
   // 🔥 MODO COMPARAÇÃO
   document.getElementById('executivePanel').innerHTML = '';
@@ -886,9 +921,10 @@ if (selectedUnits.length > 1) {
   return;
 }
 else if (selectedUnits.length === 1) {
-  // ✅ MODO UNIDADE (já existente)
+  
   const u = selectedUnits[0];
   buildUnitSummary(u);
+ 
   if (currentView === 'table') {
     buildHeader();
     buildUnitTable(u);
@@ -900,31 +936,26 @@ else if (selectedUnits.length === 1) {
     buildUnitTrend(u);
   }
   return;
-}
+ }
 else {
-  // ✅ MODO NORMAL
-  buildSummary(currentMonth);
-  buildHeader();
-  if (currentView === 'table') {
-    buildTable(currentMonth, filter, search);
-  }
-  else if (currentView === 'chart') {
-    buildCharts(currentMonth, filter, search);
-  }
-  else {
-    buildTrend(filter, search);
-  }
-}
+buildSummary(currentMonth); 
 buildHeader();
-if (currentView === 'table') buildTable(currentMonth, filter, search);
-else if (currentView === 'chart') buildCharts(currentMonth, filter, search);
-else buildTrend(filter, search);
+if (currentView === 'table'){
+ buildTable(currentMonth, filter, search);
+ }
+else if (currentView === 'chart'){
+ buildCharts(currentMonth, filter, search);
+ }
+else {
+ buildTrend(filter, search);
+ }
+}
 }
 
 /* ── EXPORT CSV ── */
 function exportCSV() {
 if (selectedUnits.length === 1) {
-const u = selectedUnit;
+const u = selectedUnits[0];
 const header = ['Mês', ...INDICATORS.map(i => i.key), 'Status'].join(';');
 const metas = ['Meta', ...INDICATORS.map(i => i.meta.toFixed(2)+'%'), ''].join(';');
 const body = MONTHS.map(m => {
