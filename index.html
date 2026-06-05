@@ -837,6 +837,18 @@ function buildComparisonChart(units) {
     `;
   }).join('');
 }
+const TREND_COLORS = [
+  '#3266AD', // azul
+  '#E24B4A', // vermelho
+  '#1D9E75', // verde
+  '#F39C12', // laranja
+  '#8E44AD', // roxo
+  '#2C3E50', // grafite
+  '#16A085', // verde azulado
+  '#D35400', // laranja escuro
+  '#7F8C8D', // cinza
+  '#C0392B'  // vermelho escuro
+];
  
 function buildComparisonTrend(units) {
   const grid = document.getElementById('trendGrid');
@@ -863,11 +875,21 @@ function buildComparisonTrend(units) {
         return {
           label: u,
           data: vals,
-          borderColor: '#3266AD',
-          pointBackgroundColor: pontoCores,
+         const cor = TREND_COLORS[idx % TREND_COLORS.length];
+       return {
+         label: u,
+         data: vals,
+         borderColor: cor,
+         pointBackgroundColor: cor,
+         backgroundColor: 'transparent',
+         borderWidth: 3,
+         pointHoverRadius: 6,
+         tension: 0.3
+       };
+
           backgroundColor: 'transparent',
-          borderWidth: 2,
-          pointRadius: 3,
+          borderWidth: 3,
+          pointHoverRadius: 3,
           tension: 0.3
         };
       });
