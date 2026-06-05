@@ -180,7 +180,7 @@ td.col-dim, th.col-dim { opacity: 0.35; }
 <div class="unit-select-row">
 <span class="unit-select-label">&#128269; Unidade:</span>
 <select id="unitSelect" multiple onchange="onUnitSelect()">
-<option value="">— Todas as unidades —</option>
+<option value="ALL">— Todas as unidades —</option>
 </select>
 </div>
 
@@ -315,7 +315,9 @@ sel.appendChild(opt);
 
 function onUnitSelect() {
   const select = document.getElementById('unitSelect');
-  selectedUnits = Array.from(select.selectedOptions).map(o => o.value);
+  selectedUnits = Array.from(select.selectedOptions)
+  .map(o => o.value)
+  .filter(v => v !== 'ALL');
   if (selectedUnits.length > 0) {
     document.getElementById('unitBanner').classList.add('visible');
     document.getElementById('unitBannerLabel').textContent =
@@ -861,7 +863,8 @@ function buildComparisonTrend(units) {
         return {
           label: u,
           data: vals,
-          borderColor: colors[idx % colors.length],
+          borderColor: '#3266AD',
+          pointBackgroundColor: pontoCores,
           backgroundColor: 'transparent',
           borderWidth: 2,
           pointRadius: 3,
@@ -965,9 +968,13 @@ function buildComparisonTable(units) {
     return `
       <tr>
         <td>${u}</td>
-        ${vals.map(v => {
-          if (v === null) return `<td>—</td>`;
-          return `<td class="${getCellClass(v, INDICATORS[i])}">
+        ${vals.map((v, i) => {
+         if (v === null) return `<td>—</td>`;
+         return `<td class="${getCellClass(v, INDICATORS[i])}">
+         ${v.toFixed(2)}%
+         </td>`;
+         }).join('')}
+``
           ${v.toFixed(2)}%
         </td>`;
         }).join('')}
