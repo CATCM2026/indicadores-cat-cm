@@ -826,7 +826,70 @@ function buildComparisonChart(units) {
     `;
   }).join('');
 }
-
+ 
+function buildComparisonTrend(units) {
+  const grid = document.getElementById('trendGrid');
+  const indsToShow = currentIndicator === 'all'
+    ? INDICATORS
+    : INDICATORS.filter(i => i.key === currentIndicator);
+  grid.innerHTML = indsToShow.map((ind, i) => {
+    const canvasId = "trendCompare" + i;
+    setTimeout(() => {
+      const ctx = document.getElementById(canvasId);
+      if (!ctx) return;
+      const datasets = units.map((u, idx) => {
+        const vals = MONTHS.map(m => {
+          const v = DATA[u][m][ind.key];
+          return v !== null ? parseFloat(v.toFixed(2)) : null;
+        });
+        const colors = ['#3266AD','#E24B4A','#1D9E75','#BA7517','#8E44AD','#2C3E50'];
+        return {
+          label: u,
+          data: vals,
+          borderColor: colors[idx % colors.length],
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          pointRadius: 3,
+          tension: 0.3
+        };
+      });
+      // linha da meta
+      datasets.push({
+        label: 'Meta',
+        data: MONTHS.map(() => ind.meta),
+        borderColor: '#000',
+        borderDash: [5,5],
+        borderWidth: 1.5,
+        pointRadius: 0
+      });
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: MONTHS,
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: true }
+          }
+        }
+      });
+    }, 50);
+    return `
+      <div class="trend-box">
+        <div class="chart-box-header">
+          <span class="chart-box-title">${ind.key}</span>
+          <span class="chart-box-sub">Comparação entre unidades</span>
+        </div>
+        <div class="trend-canvas-wrap">
+          <canvas id="${canvasId}"></canvas>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
 
 function buildTrend(filter, search) {
 Object.values(trendCharts).forEach(c => c.destroy());
@@ -916,8 +979,11 @@ if (selectedUnits.length > 1) {
   buildHeader();
   buildComparisonTable(selectedUnits);
   if (currentView === 'chart') {
-    buildComparisonChart(selectedUnits);
-  }
+  buildComparisonChart(selectedUnits);
+}
+else if (currentView === 'trend') {
+  buildComparisonTrend(selectedUnits);
+}
   return;
 }
 else if (selectedUnits.length === 1) {
