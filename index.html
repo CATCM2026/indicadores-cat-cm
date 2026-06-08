@@ -167,7 +167,6 @@ th.col-dim {
 <div class="page-subtitle" id="pageSubtitle">Indicadores Operacionais 2026</div>
 </div>
 <div class="ctrl-group">
-<input type="text" id="searchBox" placeholder="&#128269; Buscar unidade..." oninput="applyFilters()" />
 <select id="filterSel" onchange="applyFilters()">
 <option value="all">Todas as unidades</option>
 <option value="nok">Com pendência</option>
@@ -1030,7 +1029,8 @@ buildExecutivePanel(currentMonth);
 document.getElementById('executivePanel').innerHTML = '';
 }
 const filter = document.getElementById('filterSel').value;
-const search = document.getElementById('searchBox').value.toLowerCase();
+cconst searchInput = document.getElementById('searchBox');
+const search = searchInput ? searchInput.value.toLowerCase() : '';
 // ✅ COMPARAÇÃO
 if (selectedUnits.length > 1) {
   // 🔥 MODO COMPARAÇÃO
