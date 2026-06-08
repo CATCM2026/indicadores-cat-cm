@@ -772,7 +772,22 @@ const isSingle = currentIndicator !== 'all';
 const indsToShow = isSingle ? INDICATORS.filter(i => i.key === currentIndicator) : INDICATORS;
 grid.className = 'chart-grid' + (isSingle ? ' single-ind' : '');
 grid.innerHTML = indsToShow.map((ind, ii) => {
-let units = UNITS.filter(u => u.toLowerCase().includes(search));
+let units = UNITS
+  .filter(u => u.toLowerCase().includes(search))
+  .map(u => {
+    const v = getMonthData(u, month, ind.key);
+    return { u, v };
+  });
+// 🔹 remove valores null ou 0 da ordenação principal
+const valid = units
+  .filter(x => x.v !== null && x.v > 0)
+  .sort((a, b) => a.v - b.v); // menor → maior
+  .sort((a, b) => b.v - a.v); // maior → menor
+// 🔹 mantém inválidos no final (opcional)
+const invalid = units.filter(x => x.v === null || x.v === 0);
+// 🔹 junta tudo
+units = [...valid, ...invalid].map(x => x.u);
+  
 if (filter === 'nok') units = units.filter(u => { const v = getMonthData(u, month, ind.key); return v === null || v < ind.meta; });
 if (filter === 'ok') units = units.filter(u => { const v = getMonthData(u, month, ind.key); return v !== null && v >= ind.meta; });
 const allVals = UNITS.map(u => getMonthData(u, month, ind.key)).filter(v => v !== null);
