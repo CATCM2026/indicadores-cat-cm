@@ -523,8 +523,24 @@ const bars = monthVals.map(({m, v}) => {
 if (v === null) return `<div class="bar-row"><span class="bar-label">${m}</span><div class="bar-track"><div class="bar-fill nok" style="width:2%"></div><div class="bar-meta-line" style="left:${Math.min(metaPct,98).toFixed(1)}%"></div></div><span class="bar-val" style="color:var(--text3)">—</span></div>`;
 const ok = v >= ind.meta; const bad = v <= ind.red;
 const barCls = ok ? 'ok' : bad ? 'nok' : 'warn';
-const pct = Math.max(0, Math.min(v, 100));
-return `<div class="bar-row"><span class="bar-label">${m}</span><div class="bar-track"><div class="bar-fill ${barCls}" style="width:${pct.toFixed(1)}%"></div><div class="bar-meta-line" style="left:${Math.min(metaPct,98).toFixed(1)}%"></div></div><span class="bar-val ${ok?'ok':bad?'nok':'warn'}">${v.toFixed(2)}%</span></div>`;
+
+const minScale = 25;
+const maxScale = 100;
+
+// limita o valor dentro do range
+const clamped = Math.max(minScale, Math.min(v, maxScale));
+
+// converte para % visual (0–100 dentro do range 25–100)
+const pct = ((clamped - minScale) / (maxScale - minScale)) * 100;
+
+return `<div class="bar-row"><span class="bar-label">${m}</span><div class="bar-track">
+
+  <div class="bar-scale-line" style="left:0%"></div>   <!-- 25 -->
+  <div class="bar-scale-line" style="left:33.3%"></div> <!-- 50 -->
+  <div class="bar-scale-line" style="left:66.6%"></div> <!-- 75 -->
+  <div class="bar-scale-line" style="left:100%"></div> <!-- 100 -->
+``
+<div class="bar-fill ${barCls}" style="width:${pct.toFixed(1)}%"></div><div class="bar-meta-line" style="left:${Math.min(metaPct,98).toFixed(1)}%"></div></div><span class="bar-val ${ok?'ok':bad?'nok':'warn'}">${v.toFixed(2)}%</span></div>`;
 }).join('');
 const nokCount = monthVals.filter(({v}) => v !== null && v < ind.meta).length;
 return `<div class="chart-box anim${isSingle?' single-ind':''}">
