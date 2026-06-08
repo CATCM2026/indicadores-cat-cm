@@ -1028,7 +1028,7 @@ buildExecutivePanel(currentMonth);
 document.getElementById('executivePanel').innerHTML = '';
 }
 const filter = document.getElementById('filterSel').value;
-cconst searchInput = document.getElementById('searchBox');
+const searchInput = document.getElementById('searchBox');
 const search = searchInput ? searchInput.value.toLowerCase() : '';
 // ✅ COMPARAÇÃO
 if (selectedUnits.length > 1) {
@@ -1097,7 +1097,8 @@ a.click(); URL.revokeObjectURL(url);
 return;
 }
 const filter = document.getElementById('filterSel').value;
-const search = document.getElementById('searchBox').value.toLowerCase();
+const searchInput = document.getElementById('searchBox');
+const search = searchInput ? searchInput.value.toLowerCase() : '';
 let rows = UNITS.filter(u => u.toLowerCase().includes(search));
 rows = rows.map(u => ({ u, vals: INDICATORS.map(ind => DATA[u][currentMonth][ind.key]), allOk: INDICATORS.every(ind => DATA[u][currentMonth][ind.key] >= ind.meta) }));
 if (filter === 'nok') rows = rows.filter(r => !r.allOk);
