@@ -93,6 +93,7 @@ td.unit-num { color: var(--text3); font-size: 11px; text-align: center; font-fam
 .bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
 .bar-fill.ok { background: #5DCAA5; } .bar-fill.warn { background: #F5C842; } .bar-fill.nok { background: #F09595; }
 .bar-meta-line { position: absolute; top: -3px; width: 2px; height: 20px; background: #3266AD; opacity: 0.6; border-radius: 1px; }
+.bar-scale-line {position: absolute; top: 0; width: 1px; height: 100%; background: rgba(0,0,0,0.2); pointer-events: none; }
 .bar-val { font-size: 11px; font-family: 'DM Mono', monospace; font-weight: 500; width: 46px; flex-shrink: 0; }
 .bar-val.ok { color: var(--green); } .bar-val.warn { color: var(--amber); } .bar-val.nok { color: var(--red); }
 .trend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -539,7 +540,7 @@ return `<div class="bar-row"><span class="bar-label">${m}</span><div class="bar-
   <div class="bar-scale-line" style="left:33.3%"></div> <!-- 50 -->
   <div class="bar-scale-line" style="left:66.6%"></div> <!-- 75 -->
   <div class="bar-scale-line" style="left:100%"></div> <!-- 100 -->
-``
+
 <div class="bar-fill ${barCls}" style="width:${pct.toFixed(1)}%"></div><div class="bar-meta-line" style="left:${Math.min(metaPct,98).toFixed(1)}%"></div></div><span class="bar-val ${ok?'ok':bad?'nok':'warn'}">${v.toFixed(2)}%</span></div>`;
 }).join('');
 const nokCount = monthVals.filter(({v}) => v !== null && v < ind.meta).length;
@@ -819,7 +820,10 @@ const shortName = u.replace(/^(AC |AGF |LCF |AGC )/, '');
 if (v === null) return `<div class="bar-row"><span class="bar-label" title="${u}">${shortName}</span><div class="bar-track"><div class="bar-fill nok" style="width:2%"></div><div class="bar-meta-line" style="left:${Math.min(metaPct,98).toFixed(1)}%"></div></div><span class="bar-val" style="color:var(--text3)">—</span></div>`;
 const ok = v >= ind.meta; const bad = v <= ind.red;
 const barCls = ok ? 'ok' : bad ? 'nok' : 'warn';
-const pct = Math.max(0, Math.min(v, 100));
+const minScale = 25;
+const maxScale = 100;
+const clamped = Math.max(minScale, Math.min(v, maxScale));
+const pct = ((clamped - minScale) / (maxScale - minScale)) * 100;
 return `<div class="bar-row"><span class="bar-label" title="${u}">${shortName}</span><div class="bar-track"><div class="bar-fill ${barCls}" style="width:${pct.toFixed(1)}%"></div><div class="bar-meta-line" style="left:${Math.min(metaPct,98).toFixed(1)}%"></div></div><span class="bar-val ${ok?'ok':bad?'nok':'warn'}">${v.toFixed(2)}%</span></div>`;
 }).join('');
 return `<div class="chart-box anim${isSingle?' single-ind':''}">
