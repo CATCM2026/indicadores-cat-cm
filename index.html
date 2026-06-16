@@ -61,9 +61,11 @@ input[type="text"] { width: 200px; }
 .table-wrap { overflow-x: auto; max-height: 600px; overflow-y: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 820px; }
 thead { position: sticky; top: 0; z-index: 10; opacity: 1 !important; }
-thead tr:first-child th { background: var(--surface2); opacity: 1 !important; color: var(--text2); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 10px; border-bottom: 1px solid var(--border); text-align: center; white-space: nowrap; }
+thead tr:first-child th {  background: var(--surface2) !important;  opacity: 1 !important;  position: sticky;  top: 0;  z-index: 50; /* 🔥 aumenta camada */
+ color: var(--text2);  font-weight: 600;  font-size: 11px;  text-transform: uppercase;  letter-spacing: 0.5px;  padding: 12px 10px;  border-bottom: 1px solid var(--border);  text-align: center;  white-space: nowrap;}
 thead tr:first-child th.unit-col { text-align: left; min-width: 130px; }
-thead tr.meta-row th { background: var(--surface); font-size: 11px; font-weight: 500; color: var(--text3); font-family: 'DM Mono', monospace; padding: 6px 10px; border-bottom: 2px solid var(--border-med); text-align: center; }
+thead tr.meta-row th {  background: var(--surface) !important;  position: sticky;  top: 36px; /* abaixo da primeira linha */  
+ z-index: 49; font-size: 11px;  font-weight: 500;  color: var(--text3);  font-family: 'DM Mono', monospace;  padding: 6px 10px;  border-bottom: 2px solid var(--border-med);  text-align: center;}
 thead tr.meta-row th.unit-col { text-align: left; font-family: 'DM Sans', sans-serif; color: var(--text3); }
 tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
 tbody tr:last-child { border-bottom: none; }
@@ -109,12 +111,10 @@ td.unit-num { color: var(--text3); font-size: 11px; text-align: center; font-fam
 .ind-tab.active { background: var(--text); color: #fff; border-color: var(--text); }
 .month-tab.acum-tab { border-style: dashed; font-style: italic; }
 .month-tab.acum-tab.active { background: var(--accent); border-color: var(--accent); font-style: italic; }
-td.col-highlight, th.col-highlight { background: rgba(50,102,173,0.07) !important; }
-td.col-dim {
-  opacity: 0.35;
-}
-th.col-dim {
-  opacity: 1 !important;          
+td.col-highlight {  background: rgba(50,102,173,0.07) !important;}
+th.col-highlight {  background: var(--surface2) !important; /* 🔥 sólido */}
+td.col-dim {  opacity: 0.35;}
+th.col-dim {  opacity: 1 !important;   
 }
 
 /* Unit mode banner */
