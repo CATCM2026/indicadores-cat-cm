@@ -169,6 +169,13 @@ th.col-dim {
 </div>
 <div class="ctrl-group">
 <select id="filterSel" onchange="applyFilters()">
+<select id="quarterSel" onchange="selectQuarter()">
+  <option value="ALL">Ano inteiro</option>
+  <option value="T1">1º Trimestre</option>
+  <option value="T2">2º Trimestre</option>
+  <option value="T3">3º Trimestre</option>
+  <option value="T4">4º Trimestre</option>
+</select>
 <option value="all">Todas as unidades</option>
 <option value="nok">Com pendência</option>
 <option value="ok">Conforme</option>
@@ -248,6 +255,12 @@ const INDICATORS = [
 { key: 'TAPON', meta: 90.00, red: 88.00 },
 ];
 const MONTHS = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const QUARTERS = {
+  T1: ['Jan','Fev','Mar'],
+  T2: ['Abr','Mai','Jun'],
+  T3: ['Jul','Ago','Set'],
+  T4: ['Out','Nov','Dez']
+};
 const UNITS = [
 'AC ARARUNA','AC BARBOSA FERRAZ','AC BOA ESPERANCA','AC CAMPO MOURAO','AC CIANORTE',
 'AC CORUMBATAI DO SUL','AC ENGENHEIRO BELTRAO','AC FAROL','AC FENIX','AC GOIOERE',
@@ -298,6 +311,7 @@ applyFilters();
 
 /* ── STATE ── */
 let currentMonth = 'Jun';
+let currentQuarter = 'ALL';
 let currentView = 'table';
 let currentIndicator = 'all';
 let selectedUnits = [];
@@ -354,9 +368,23 @@ const vals = MONTHS.map(m => DATA[u][m][indKey]).filter(v => v !== null);
 if (!vals.length) return null;
 return parseFloat((vals.reduce((a,b) => a+b, 0) / vals.length).toFixed(2));
 }
+function getQuarterData(u, quarter, indKey) {
+  const months = QUARTERS[quarter];
+  const vals = months
+    .map(m => DATA[u][m][indKey])
+    .filter(v => v !== null);
+  if (!vals.length) return null;
+  return parseFloat(
+    (vals.reduce((a,b)=>a+b,0) / vals.length).toFixed(2)
+  );
+}
 function getMonthData(u, month, indKey) {
-if (month === 'ACUM') return getAccum(u, indKey);
-return DATA[u][month][indKey];
+  // ✅ PRIORIDADE: trimestre
+  if (currentQuarter !== 'ALL') {
+    return getQuarterData(u, currentQuarter, indKey);
+  }
+  if (month === 'ACUM') return getAccum(u, indKey);
+  return DATA[u][month][indKey];
 }
 
 /* ── MONTH TABS ── */
@@ -370,6 +398,16 @@ const acumBtn = `<button class="month-tab acum-tab${currentMonth==='ACUM'?' acti
 wrap.innerHTML = monthBtns + acumBtn;
 }
 function selectMonth(m, el) {
+  function selectQuarter() {
+  currentQuarter = document.getElementById('quarterSel').value;
+  if (currentQuarter !== 'ALL') {
+    currentMonth = null;
+    document.querySelectorAll('.month-tab').forEach(t =>
+      t.classList.remove('active')
+    );
+  }
+  applyFilters();
+}
 currentMonth = m;
 document.querySelectorAll('.month-tab').forEach(t => t.classList.remove('active'));
 el.classList.add('active');
@@ -689,8 +727,12 @@ function buildHeader() {
 
 
 function buildTable(month, filter, search) {
-document.getElementById('tableMonth').textContent = month === 'ACUM' ? 'Média Acumulada 2026' : month + ' 2026';
-let rows = UNITS.map(u => ({
+document.getElementById('tableMonth').textContent =
+  currentQuarter !== 'ALL'
+    ? currentQuarter + ' 2026'
+    : (month === 'ACUM'
+       ? 'Média Acumulada 2026'
+       : month + ' 2026');let rows = UNITS.map(u => ({
   u,
   vals: INDICATORS.map(ind => getMonthData(u, month, ind.key)) 
 }))
@@ -1198,8 +1240,9 @@ return `
 // ===== PAINEL EXECUTIVO =====
 function buildExecutivePanel(month) {
 
-const val = getMonthData('CAT CM', month, 'DOAT');
-
+const val = currentQuarter !== 'ALL'
+  ? getQuarterData('CAT CM', currentQuarter, 'DOAT')
+  : getMonthData('CAT CM', month, 'DOAT');
 const indicador = INDICATORS.find(i => i.key === 'DOAT');
 const meta = indicador.meta;
 const red = indicador.red;
