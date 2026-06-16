@@ -169,16 +169,16 @@ th.col-dim {
 </div>
 <div class="ctrl-group">
 <select id="filterSel" onchange="applyFilters()">
+  <option value="all">Todas as unidades</option>
+  <option value="nok">Com pendência</option>
+  <option value="ok">Conforme</option>
+</select>
 <select id="quarterSel" onchange="selectQuarter()">
   <option value="ALL">Ano inteiro</option>
   <option value="T1">1º Trimestre</option>
   <option value="T2">2º Trimestre</option>
   <option value="T3">3º Trimestre</option>
   <option value="T4">4º Trimestre</option>
-</select>
-<option value="all">Todas as unidades</option>
-<option value="nok">Com pendência</option>
-<option value="ok">Conforme</option>
 </select>
 <div class="btn-group">
 <button id="btnTable" class="active" onclick="switchView('table', this)">Tabela</button>
@@ -398,7 +398,14 @@ const acumBtn = `<button class="month-tab acum-tab${currentMonth==='ACUM'?' acti
 wrap.innerHTML = monthBtns + acumBtn;
 }
 function selectMonth(m, el) {
-  function selectQuarter() {
+currentMonth = m;
+currentQuarter = 'ALL'; // 🔥 importante resetar trimestre
+document.getElementById('quarterSel').value = 'ALL';
+document.querySelectorAll('.month-tab').forEach(t => t.classList.remove('active'));
+el.classList.add('active');
+applyFilters();
+}
+function selectQuarter() {
   currentQuarter = document.getElementById('quarterSel').value;
   if (currentQuarter !== 'ALL') {
     currentMonth = null;
@@ -407,11 +414,6 @@ function selectMonth(m, el) {
     );
   }
   applyFilters();
-}
-currentMonth = m;
-document.querySelectorAll('.month-tab').forEach(t => t.classList.remove('active'));
-el.classList.add('active');
-applyFilters();
 }
 
 /* ── IND TABS ── */
